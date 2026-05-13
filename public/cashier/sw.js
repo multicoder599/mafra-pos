@@ -1,30 +1,30 @@
 const CACHE_NAME = 'mafra-cashier-v1';
-const ASSETS = [
+const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './background.png',
-    'https://fonts.googleapis.com/css2?family=Cause:wght@100..900&display=swap',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    'https://fonts.googleapis.com/css2?family=Cause:wght@100..900&display=swap'
 ];
 
-// 1. Install and Cache the UI
-self.addEventListener('install', event => {
+// Install Service Worker and cache files
+self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            console.log('Offline cache loaded');
-            return cache.addAll(ASSETS);
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(ASSETS_TO_CACHE);
         })
     );
 });
 
-// 2. Serve from Cache if Offline
-self.addEventListener('fetch', event => {
-    // We only cache the UI files. We ignore API calls here because our app handles offline API data manually.
-    if (event.request.method !== 'GET' || event.request.url.includes('/api/')) return;
-
+// Intercept requests and serve from cache if offline
+self.addEventListener('fetch', (event) => {
     event.respondWith(
-        fetch(event.request).catch(() => {
-            return caches.match(event.request);
+        caches.match(event.request).then((response) => {
+            return response || fetch(event.request);
+        }).catch(() => {
+            if (event.request.mode === 'navigate') {
+                return caches.match('./index.html');
+            }
         })
     );
 });

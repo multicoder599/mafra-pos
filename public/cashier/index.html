@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mafra Lodge - Cashier Portal</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cause:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { box-sizing: border-box; font-family: 'Cause', sans-serif; }
+        body { margin: 0; background-color: #f4f6f9; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* --- LOGIN SCREEN --- */
+        #login-screen { 
+            display: flex; height: 100vh; width: 100vw; background-image: url('background.png'); 
+            background-size: cover; background-position: center; position: absolute;
+            top: 0; left: 0; align-items: center; justify-content: flex-start; padding-left: 8%; z-index: 1000;
+        }
+        #login-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1; }
+        .login-box { 
+            position: relative; z-index: 2; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            padding: 45px 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 100%; max-width: 400px; 
+        }
+        .login-box h2 { font-size: 32px; color: #333; margin-top: 0; margin-bottom: 10px; }
+        .login-box p { color: #6c757d; margin-bottom: 30px; font-size: 15px; }
+        .login-box label { font-weight: bold; font-size: 14px; color: #495057; display: block; margin-bottom: 8px; }
+        .login-box input { width: 100%; padding: 15px; margin-bottom: 25px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; transition: 0.2s; }
+        .login-box button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
+
+        /* --- MAIN LAYOUT --- */
+        #app-screen { display: none; height: 100vh; width: 100vw; display: flex; }
+        .sidebar { width: 240px; background: #343a40; color: white; padding: 20px; display: flex; flex-direction: column; }
+        .sidebar h2 { margin-top: 0; color: #fff; border-bottom: 1px solid #4f5962; padding-bottom: 20px; font-size: 22px; text-align: center; }
+        
+        /* Offline Status Indicator */
+        #offline-badge { display: none; background: #dc3545; color: white; padding: 10px; text-align: center; border-radius: 5px; margin-bottom: 20px; font-weight: bold; font-size: 13px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        .nav-item { padding: 15px; margin: 5px 0; background: transparent; border-radius: 5px; cursor: pointer; transition: 0.2s; font-size: 15px; display: flex; align-items: center; gap: 12px; }
+        .nav-item:hover { background: #4f5962; }
+        .nav-item.active { background: #007bff; font-weight: bold; }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; margin-top: auto; font-weight: bold; text-align: center; display: flex; justify-content: center; align-items: center; gap: 8px; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; background: #f4f6f9; overflow: hidden; }
+        .tab-section { display: none; height: 100%; animation: fadeIn 0.3s ease; }
+        .tab-section.active { display: flex; } 
+        #section-inventory.active, #section-history.active { display: block; overflow-y: auto; padding: 35px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- POS TAB --- */
+        .products-area { flex: 3; padding: 20px 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        .pos-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;}
+        .pos-header h2 { margin: 0; font-size: 24px; color: #333; }
+        
+        .search-container { position: relative; flex-grow: 1; max-width: 300px; }
+        .search-container i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; }
+        .search-container input { width: 100%; padding: 10px 10px 10px 40px; border: 1px solid #ccc; border-radius: 20px; font-size: 15px; outline: none; }
+
+        .category-filters { display: flex; gap: 10px; }
+        .filter-btn { padding: 8px 16px; border: 1px solid #ced4da; background: white; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; color: #495057; }
+        .filter-btn.active { background: #007bff; color: white; border-color: #007bff; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 15px; }
+        .product-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; cursor: pointer; border: 1px solid #eee; }
+        .product-card:active { transform: scale(0.95); }
+        .product-price { color: #28a745; font-weight: bold; margin-top: 10px; font-size: 16px; }
+        
+        /* Cart Sidebar */
+        .cart-sidebar { flex: 1.2; background: white; border-left: 1px solid #ddd; display: flex; flex-direction: column; min-width: 340px; }
+        .cart-header { padding: 20px; background: #212529; color: white; display: flex; justify-content: space-between; align-items: center; margin: 0; font-size: 18px; }
+        .cart-items { flex-grow: 1; overflow-y: auto; padding: 20px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #eee; }
+        .qty-controls { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        .qty-btn { width: 25px; height: 25px; border-radius: 4px; border: 1px solid #ccc; background: #f8f9fa; cursor: pointer; font-weight: bold; }
+        
+        .delete-btn { background: transparent; color: #dc3545; border: none; cursor: pointer; font-size: 18px; }
+        .cart-footer { padding: 20px; background: #f8f9fa; border-top: 1px solid #dee2e6; display: flex; flex-direction: column; gap: 10px;}
+        .customer-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; text-transform: uppercase; font-weight: bold;}
+        .total-row { display: flex; justify-content: space-between; font-size: 24px; font-weight: bold; color: #333; margin: 5px 0;}
+        .checkout-btn { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 10px; }
+
+        /* Tables */
+        .table-container { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #495057; font-weight: bold; }
+        
+        .badge { padding: 6px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-completed { background: #d4edda; color: #155724; }
+        
+        .btn-action { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; margin-right: 5px; }
+        .btn-save { background: #17a2b8; }
+        .btn-del { background: #dc3545; }
+        .btn-success { background: #28a745; display: inline-flex; align-items: center; gap: 5px;}
+
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-end; }
+        .form-group { flex: 1; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+
+        /* --- EXACT RECEIPT REPLICATION (Print Mode) --- */
+        #printable-receipt { display: none; width: 300px; margin: 0 auto; color: black; background: white; padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 12px; }
+        @media print {
+            body * { visibility: hidden; } 
+            #printable-receipt, #printable-receipt * { visibility: visible; } 
+            #printable-receipt { position: absolute; left: 0; top: 0; display: block; width: 100%; }
+            .r-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+            .r-table th, .r-table td { padding: 4px 0; text-align: left; vertical-align: top;}
+            .r-border { border-bottom: 1px dashed black; margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>Cashier Portal</h2>
+            <p>Enter your system credentials provided by the Admin.</p>
+            <label>Username</label>
+            <input type="text" id="username" placeholder="e.g. jane_cashier">
+            <label>Password / PIN</label>
+            <input type="password" id="pin" placeholder="••••">
+            <button onclick="attemptLogin()">Secure Log In</button>
+        </div>
+    </div>
+
+    <div id="app-screen" style="display: none;">
+        <div class="sidebar">
+            <h2>Mafra Lodge</h2>
+            
+            <div id="offline-badge"><i class="fa-solid fa-triangle-exclamation"></i> OFFLINE MODE</div>
+
+            <div class="nav-item active" onclick="switchTab('pos')" id="nav-pos"><i class="fa-solid fa-cash-register"></i> Serve Customer</div>
+            <div class="nav-item" onclick="switchTab('history')" id="nav-history"><i class="fa-solid fa-clock-rotate-left"></i> Order History</div>
+            <div class="nav-item" onclick="switchTab('inventory')" id="nav-inventory"><i class="fa-solid fa-boxes-stacked"></i> Database</div>
+            
+            <div style="flex-grow: 1;"></div>
+            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+        </div>
+
+        <div class="main-content">
+            
+            <div id="section-pos" class="tab-section active">
+                <div class="products-area">
+                    <div class="pos-header">
+                        <h2>Point of Sale</h2>
+                        <div class="search-container">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="search-input" placeholder="Search product name..." oninput="handleSearch()">
+                        </div>
+                        <div class="category-filters">
+                            <button class="filter-btn active" id="filter-all" onclick="filterProducts('all')">All</button>
+                            <button class="filter-btn" id="filter-food" onclick="filterProducts('food')">Food</button>
+                            <button class="filter-btn" id="filter-drinks" onclick="filterProducts('drinks')">Drinks</button>
+                            <button class="filter-btn" id="filter-wines" onclick="filterProducts('wines')">Wines</button>
+                            <button class="filter-btn" id="filter-rooms" onclick="filterProducts('rooms')">Rooms</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid" id="product-grid"></div>
+                </div>
+
+                <div class="cart-sidebar">
+                    <h2 class="cart-header">
+                        <span><i class="fa-solid fa-cart-shopping"></i> Cart</span>
+                        <button onclick="clearCart()" style="background: transparent; border: none; color: #dc3545; cursor: pointer; font-size: 18px;" title="Clear Cart"><i class="fa-solid fa-trash-can"></i></button>
+                    </h2>
+                    <div class="cart-items" id="cart-items"></div>
+                    <div class="cart-footer">
+                        <input type="text" id="customer-waiter-name" class="customer-input" placeholder="Customer / Waiter Name (e.g. WALK-IN)" value="WALK-IN">
+                        
+                        <div class="total-row"><span>Total:</span><span>KES <span id="cart-total">0.00</span></span></div>
+                        <button class="checkout-btn" onclick="processCheckout()"><i class="fa-solid fa-print"></i> Generate Receipt</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-history" class="tab-section">
+                <div class="table-container">
+                    <h2><i class="fa-solid fa-clock-rotate-left"></i> Transaction History & Status</h2>
+                    <p>Mark pending orders as Paid once the waiter returns with confirmation.</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID & Time</th>
+                                <th>Waiter / Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-inventory" class="tab-section">
+                <div class="table-container" style="background: #f8f9fa; border: 1px solid #dee2e6;">
+                    <h2><i class="fa-solid fa-plus-circle"></i> Add Item or Room</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="new-prod-name" placeholder="e.g. Room 101 or Tusker">
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="new-prod-type">
+                                <option value="drinks">Drinks</option>
+                                <option value="food">Food</option>
+                                <option value="wines">Wines & Spirits</option>
+                                <option value="rooms">Room Booking</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Price (KES)</label>
+                            <input type="number" id="new-prod-price" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Stock (0 for rooms)</label>
+                            <input type="number" id="new-prod-stock" placeholder="0">
+                        </div>
+                        <button class="btn-action btn-save" style="margin-bottom: 3px; height: 42px;" onclick="createNewProduct()">Add Item</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <h2><i class="fa-solid fa-database"></i> Live Database</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th><th>Category</th><th>Current Stock</th><th>New Price</th><th>Add Stock</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="printable-receipt">
+        <div style="text-align: center; font-weight: bold;">
+            <div style="font-size: 16px;">MAFRA LODGE</div>
+            <div>MERU COUNTY</div>
+            <div>TEL NO: +254 700 000 000</div>
+            <div>-----ORIGINAL RECEIPT-----</div>
+        </div>
+        
+        <table class="r-table">
+            <tr><td style="width: 80px;">INVOICE NO:</td><td id="receipt-id" style="font-weight: bold;"></td></tr>
+            <tr><td>CUSTOMER:</td><td id="receipt-customer" style="font-weight: bold;"></td></tr>
+            <tr><td>DATE:</td><td id="receipt-date"></td></tr>
+        </table>
+        
+        <div class="r-border"></div>
+        
+        <table class="r-table" style="font-weight: bold;">
+            <tr style="border-bottom: 1px dashed black;">
+                <th style="width: 50%;">PARTICULARS</th>
+                <th style="width: 15%;">QTY</th>
+                <th style="width: 15%;">PRICE</th>
+                <th style="width: 20%; text-align: right;">TOTAL</th>
+            </tr>
+            <tbody id="receipt-items"></tbody>
+        </table>
+        
+        <div class="r-border"></div>
+        
+        <table class="r-table" style="font-weight: bold;">
+            <tr><td>SUB TOTAL:</td><td style="text-align: right;" id="receipt-subtotal"></td></tr>
+            <tr><td>DISCOUNT :</td><td style="text-align: right;">0.00</td></tr>
+            <tr><td>TOTAL:</td><td style="text-align: right;" id="receipt-total"></td></tr>
+        </table>
+        
+        <div class="r-border"></div>
+        
+        <table class="r-table">
+            <tr><td>Payment:</td><td style="text-align: right;" id="receipt-payment">0.00</td></tr>
+            <tr><td style="font-weight: bold;">DUE AMOUNT:</td><td style="text-align: right; font-weight: bold;">0.00</td></tr>
+        </table>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <div>You Were Served By: <span id="receipt-cashier-name" style="text-transform: uppercase;"></span></div>
+            <div>****Thank You... Come Again...****</div>
+            <div style="margin-top: 5px;">THIS IS NOT A LEGAL RECEIPT.</div>
+        </div>
+    </div>
+
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+
+    <script>
+        const socket = io('http://localhost:5000'); 
+        
+        // Caching Logic
+        let cart = JSON.parse(localStorage.getItem('cashier_cart')) || [];
+        let allProducts = JSON.parse(localStorage.getItem('mafra_cached_menu')) || []; 
+        let offlineQueue = JSON.parse(localStorage.getItem('mafra_offline_queue')) || [];
+        
+        let currentCategory = 'all';
+        let searchQuery = '';
+        let loggedInUsername = localStorage.getItem('cashier_username') || 'Cashier';
+
+        // --- SERVICE WORKER REGISTRATION (Allows App to load Offline) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered!'))
+                    .catch(err => console.log('SW setup failed:', err));
+            });
+        }
+
+        // --- NETWORK LISTENERS ---
+        window.addEventListener('offline', () => {
+            document.getElementById('offline-badge').style.display = 'block';
+            alert('⚠️ Network Disconnected! You are now operating in OFFLINE MODE. You can still print receipts. Sales will be saved and synced automatically when Wi-Fi returns.');
+        });
+
+        window.addEventListener('online', () => {
+            document.getElementById('offline-badge').style.display = 'none';
+            syncOfflineOrders();
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!navigator.onLine) document.getElementById('offline-badge').style.display = 'block';
+            if (cart.length > 0) updateCartUI();
+            if (allProducts.length > 0) renderPOSGrid(); // Load cached menu immediately
+            
+            if(localStorage.getItem('cashier_logged_in') === 'true') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'flex'; 
+                fetchAndRenderProducts();
+                fetchHistory(); 
+            }
+        });
+
+        // --- SYNC ENGINE ---
+        async function syncOfflineOrders() {
+            if (offlineQueue.length === 0) return;
+            
+            alert(`🌐 Connection restored! Syncing ${offlineQueue.length} offline order(s) to the Admin database...`);
+            
+            let pendingOrders = [...offlineQueue];
+            offlineQueue = []; 
+            localStorage.removeItem('mafra_offline_queue');
+
+            for (let orderPayload of pendingOrders) {
+                try {
+                    await fetch('http://localhost:5000/api/orders', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderPayload)
+                    });
+                } catch(e) {
+                    console.error("Sync failed, pushing back to queue");
+                    offlineQueue.push(orderPayload);
+                    localStorage.setItem('mafra_offline_queue', JSON.stringify(offlineQueue));
+                }
+            }
+            
+            if (offlineQueue.length === 0) {
+                alert("✅ All offline orders successfully synced!");
+                fetchAndRenderProducts(); // Update stock after sync
+                fetchHistory(); // Update history
+            }
+        }
+
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            document.getElementById(`section-${tabName}`).classList.add('active');
+            document.getElementById(`nav-${tabName}`).classList.add('active');
+            if(tabName === 'history') fetchHistory();
+        }
+
+        async function attemptLogin() {
+            if(!navigator.onLine) return alert("You must be connected to Wi-Fi to log in for the first time.");
+            const username = document.getElementById('username').value;
+            const pin = document.getElementById('pin').value;
+            try {
+                const response = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, pin, attemptedRole: 'cashier' })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('cashier_logged_in', 'true');
+                    localStorage.setItem('cashier_username', username);
+                    loggedInUsername = username;
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('app-screen').style.display = 'flex';
+                    fetchAndRenderProducts(); 
+                } else alert(data.message);
+            } catch (error) { alert("Could not connect to server."); }
+        }
+
+        function logout() {
+            localStorage.removeItem('cashier_logged_in');
+            localStorage.removeItem('cashier_username');
+            location.reload(); 
+        }
+
+        // --- FETCH & RENDER POS ---
+        async function fetchAndRenderProducts() {
+            if(!navigator.onLine) return; // Prevent fetch if offline
+            try {
+                const response = await fetch('http://localhost:5000/api/products');
+                const data = await response.json();
+                if (data.success) {
+                    allProducts = data.products;
+                    // 👉 Backup the menu to browser memory for offline use!
+                    localStorage.setItem('mafra_cached_menu', JSON.stringify(allProducts));
+                    renderPOSGrid();
+                    renderInventoryTable();
+                }
+            } catch (error) { console.error("Error fetching live products:", error); }
+        }
+
+        function filterProducts(category) {
+            currentCategory = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`filter-${category}`).classList.add('active');
+            renderPOSGrid();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase();
+            renderPOSGrid();
+        }
+
+        function renderPOSGrid() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = ''; 
+            const filtered = allProducts.filter(p => {
+                const matchesCategory = currentCategory === 'all' || (p.type || '').toLowerCase() === currentCategory;
+                const matchesSearch = p.name.toLowerCase().includes(searchQuery);
+                return matchesCategory && matchesSearch;
+            });
+            if (filtered.length === 0) {
+                grid.innerHTML = `<p style="grid-column: 1/-1; color: #888; text-align: center;">No matching products found.</p>`;
+                return;
+            }
+            filtered.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = () => addToCart(product);
+                card.innerHTML = `<h3 style="margin:0; color:#333; font-size: 16px;">${product.name}</h3><div class="product-price">KES ${product.price.toFixed(2)}</div>`;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- CART ---
+        function addToCart(product) {
+            if (!product || !product._id) return alert("Corrupt product data.");
+            const existing = cart.find(item => item._id === product._id);
+            if (existing) existing.quantity += 1;
+            else cart.push({ ...product, quantity: 1 });
+            updateCartUI();
+        }
+        function changeCartQty(id, delta) {
+            const item = cart.find(i => i._id === id);
+            if (item) { item.quantity += delta; if (item.quantity <= 0) cart = cart.filter(i => i._id !== id); }
+            updateCartUI();
+        }
+        function removeFromCart(productId) { cart = cart.filter(item => item._id !== productId); updateCartUI(); }
+        function clearCart() { if(confirm("Clear cart?")) { cart = []; updateCartUI(); } }
+
+        function updateCartUI() {
+            const cartContainer = document.getElementById('cart-items');
+            cartContainer.innerHTML = '';
+            let total = 0;
+            if (cart.length === 0) cartContainer.innerHTML = '<p style="text-align:center; color:#888;">Cart is empty.</p>';
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <div style="flex:1;"><strong style="color:#333;">${item.name}</strong><br>
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="changeCartQty('${item._id}', -1)">-</button>
+                            <span style="width: 20px; text-align:center;">${item.quantity}</span>
+                            <button class="qty-btn" onclick="changeCartQty('${item._id}', 1)">+</button>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight:bold; margin-bottom: 5px;">KES ${itemTotal.toFixed(2)}</div>
+                        <button class="delete-btn" onclick="removeFromCart('${item._id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                cartContainer.appendChild(div);
+            });
+            document.getElementById('cart-total').innerText = total.toFixed(2);
+            localStorage.setItem('cashier_cart', JSON.stringify(cart));
+        }
+
+        // --- CHECKOUT & OFFLINE QUEUEING ---
+        async function processCheckout() {
+            if(cart.length === 0) return alert("Cart is empty!");
+            const customerName = document.getElementById('customer-waiter-name').value.toUpperCase() || 'WALK-IN';
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const orderId = Math.floor(Math.random() * 100000).toString(); 
+            
+            // Build Physical Receipt
+            document.getElementById('receipt-id').innerText = orderId;
+            document.getElementById('receipt-customer').innerText = customerName;
+            const now = new Date();
+            const dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth()+1).padStart(2, '0')}-${now.getFullYear()} ${now.toLocaleTimeString('en-GB')}`;
+            document.getElementById('receipt-date').innerText = dateStr;
+            document.getElementById('receipt-subtotal').innerText = total.toFixed(2);
+            document.getElementById('receipt-total').innerText = total.toFixed(2);
+            document.getElementById('receipt-payment').innerText = total.toFixed(2);
+            document.getElementById('receipt-cashier-name').innerText = loggedInUsername;
+            document.getElementById('receipt-items').innerHTML = cart.map(item => `
+                <tr><td style="padding-right: 5px;">${item.name.toUpperCase()}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)}</td><td style="text-align: right;">${(item.price * item.quantity).toFixed(2)}</td></tr>
+            `).join('');
+
+            window.print(); // Trigger thermal printer immediately
+
+            // Build Database Payload
+            const orderPayload = {
+                items: cart.map(i => ({ product_id: i._id, name: i.name, quantity: i.quantity, unit_price: i.price })),
+                total_amount: total, table_number: 'Walk-in', served_by: loggedInUsername, customer_name: customerName
+            };
+
+            // 👉 THE OFFLINE / ONLINE DECISION
+            if (navigator.onLine) {
+                try {
+                    const response = await fetch('http://localhost:5000/api/orders', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderPayload)
+                    });
+                    const data = await response.json();
+                    if (data.success) fetchAndRenderProducts(); // Update stock immediately
+                } catch(e) { 
+                    console.error("Network failed during checkout, queuing...", e);
+                    queueOrder(orderPayload);
+                }
+            } else {
+                queueOrder(orderPayload);
+            }
+
+            cart = []; 
+            document.getElementById('customer-waiter-name').value = 'WALK-IN'; 
+            updateCartUI();
+        }
+
+        function queueOrder(payload) {
+            offlineQueue.push(payload);
+            localStorage.setItem('mafra_offline_queue', JSON.stringify(offlineQueue));
+        }
+
+        // --- ORDER HISTORY WORKFLOW ---
+        async function fetchHistory() {
+            if(!navigator.onLine) return; // Cannot fetch history offline
+            try {
+                const response = await fetch('http://localhost:5000/api/orders');
+                const data = await response.json();
+                if (data.success) {
+                    const tbody = document.getElementById('history-tbody');
+                    tbody.innerHTML = '';
+                    data.orders.forEach(order => {
+                        const dateStr = new Date(order.createdAt).toLocaleString();
+                        const isPending = order.status === 'pending';
+                        const statusBadge = isPending ? '<span class="badge badge-pending">Pending Receipt</span>' : '<span class="badge badge-completed">Paid / Completed</span>';
+                        const actionBtn = isPending 
+                            ? `<button class="btn-action btn-success" onclick="markPaid('${order._id}')"><i class="fa-solid fa-check-double"></i> Mark Paid</button>`
+                            : `<span style="color:#888; font-size:12px;">No Action Needed</span>`;
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>#${order._id.substring(0,6).toUpperCase()}</strong><br><small style="color:#6c757d;">${dateStr}</small></td>
+                            <td style="text-transform: uppercase;">${order.customer_name || 'Walk-in'}</td>
+                            <td><strong>KES ${order.total_amount.toFixed(2)}</strong></td>
+                            <td>${statusBadge}</td>
+                            <td>${actionBtn}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        async function markPaid(orderId) {
+            if(!navigator.onLine) return alert("You must be online to update payment statuses.");
+            try {
+                const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'completed' })
+                });
+                if((await res.json()).success) fetchHistory();
+            } catch(e) { console.error(e); }
+        }
+
+        // --- INVENTORY CRUD (Online Only) ---
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventory-tbody');
+            tbody.innerHTML = '';
+            allProducts.forEach(product => {
+                if (!product || !product._id) return;
+                const safeName = product.name.replace(/'/g, "\\'");
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${product.name}</strong></td>
+                    <td style="text-transform: capitalize;">${product.type || 'Uncategorized'}</td>
+                    <td style="font-weight: bold; color: ${product.stock < 5 ? '#dc3545' : '#28a745'};">${product.stock || 0}</td>
+                    <td><input type="number" id="price-${product._id}" class="edit-input" value="${product.price}"></td>
+                    <td><input type="number" id="addstock-${product._id}" class="edit-input" placeholder="0"></td>
+                    <td>
+                        <button class="btn-action btn-save" onclick="updateProduct('${product._id}')"><i class="fa-solid fa-floppy-disk"></i></button>
+                        <button class="btn-action btn-del" onclick="deleteProduct('${product._id}', '${safeName}')"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function createNewProduct() {
+            if(!navigator.onLine) return alert("You must be online to alter the database.");
+            const name = document.getElementById('new-prod-name').value;
+            const type = document.getElementById('new-prod-type').value;
+            const price = document.getElementById('new-prod-price').value;
+            const stock = document.getElementById('new-prod-stock').value;
+            if(!name || !price) return alert("Name and Price required.");
+            try {
+                const res = await fetch('http://localhost:5000/api/products', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, type, price, stock })
+                });
+                if((await res.json()).success) {
+                    document.getElementById('new-prod-name').value = ''; document.getElementById('new-prod-price').value = ''; document.getElementById('new-prod-stock').value = '';
+                    fetchAndRenderProducts();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function updateProduct(id) {
+            if(!navigator.onLine) return alert("You must be online to alter the database.");
+            const price = document.getElementById(`price-${id}`).value;
+            const addedStock = document.getElementById(`addstock-${id}`).value;
+            try {
+                const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ price, addedStock })
+                });
+                if((await res.json()).success) fetchAndRenderProducts();
+            } catch(e) { console.error(e); }
+        }
+
+        async function deleteProduct(id, name) {
+            if(!navigator.onLine) return alert("You must be online to alter the database.");
+            if(!confirm(`Delete "${name}"?`)) return;
+            try {
+                const res = await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
+                if((await res.json()).success) fetchAndRenderProducts();
+            } catch(e) { console.error(e); }
+        }
+    </script>
+</body>
+</html>

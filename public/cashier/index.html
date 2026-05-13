@@ -318,6 +318,7 @@
     <script>
         const socket = io('https://api.mafralodge.online'); 
         
+        let isActuallyOnline = navigator.onLine; // Replaces the browser's native check
         let cart = JSON.parse(localStorage.getItem('cashier_cart')) || [];
         let allProducts = JSON.parse(localStorage.getItem('mafra_cached_menu')) || []; 
         let offlineQueue = JSON.parse(localStorage.getItem('mafra_offline_queue')) || [];
@@ -357,19 +358,44 @@
             });
         }
 
-        // --- NETWORK LISTENERS ---
-        window.addEventListener('offline', () => {
-            document.getElementById('offline-badge').style.display = 'block';
-            showModal('Offline Mode Active', 'Network Disconnected! You are now operating in OFFLINE MODE. You can still print receipts. Sales will be saved and synced automatically when Wi-Fi returns.', 'warning');
-        });
+        // --- THE HEARTBEAT ENGINE (Kills "Lie-Fi") ---
+        async function checkTrueConnection() {
+            try {
+                // Set a strict 3-second timeout timer
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-        window.addEventListener('online', () => {
-            document.getElementById('offline-badge').style.display = 'none';
-            syncOfflineOrders();
-        });
+                // Ping your actual server. The '?t=' part stops the browser from caching the response.
+                await fetch('https://api.mafralodge.online/api/products?t=' + new Date().getTime(), {
+                    method: 'HEAD',
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                // If the ping succeeds and we were previously offline, trigger the "Online" state!
+                if (!isActuallyOnline) {
+                    isActuallyOnline = true;
+                    document.getElementById('offline-badge').style.display = 'none';
+                    syncOfflineOrders(); 
+                }
+            } catch (error) {
+                // If the ping fails or times out, the internet is DEAD (even if Wi-Fi is connected)
+                if (isActuallyOnline) {
+                    isActuallyOnline = false;
+                    document.getElementById('offline-badge').style.display = 'block';
+                    showModal('Offline Mode Active', 'Internet connection lost. You are now operating in OFFLINE MODE. You can still print receipts and sales will be saved.', 'warning');
+                }
+            }
+        }
+
+        // Run the heartbeat every 10 seconds
+        setInterval(checkTrueConnection, 10000);
+        // Run it once immediately when the app loads
+        checkTrueConnection();
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (!navigator.onLine) document.getElementById('offline-badge').style.display = 'block';
+            if (!isActuallyOnline) document.getElementById('offline-badge').style.display = 'block';
             if (cart.length > 0) updateCartUI();
             if (allProducts.length > 0) renderPOSGrid(); 
             
@@ -423,7 +449,7 @@
         }
 
         async function attemptLogin() {
-            if(!navigator.onLine) return showModal("Network Error", "You must be connected to Wi-Fi to log in for the first time.", "error");
+            if(!isActuallyOnline) return showModal("Network Error", "You must be connected to Wi-Fi to log in for the first time.", "error");
             const username = document.getElementById('username').value;
             const pin = document.getElementById('pin').value;
             try {
@@ -451,7 +477,7 @@
 
         // --- FETCH & RENDER POS ---
         async function fetchAndRenderProducts() {
-            if(!navigator.onLine) return; 
+            if(!isActuallyOnline) return; 
             try {
                 const response = await fetch('https://api.mafralodge.online/api/products');
                 const data = await response.json();
@@ -574,7 +600,7 @@
                 customer_name: waiterName 
             };
 
-            if (navigator.onLine) {
+            if (isActuallyOnline) {
                 try {
                     const response = await fetch('https://api.mafralodge.online/api/orders', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -602,7 +628,7 @@
 
         // --- ORDER HISTORY ---
         async function fetchHistory() {
-            if(!navigator.onLine) return; 
+            if(!isActuallyOnline) return; 
             try {
                 const response = await fetch('https://api.mafralodge.online/api/orders');
                 const data = await response.json();
@@ -632,7 +658,7 @@
         }
 
         async function markPaid(orderId) {
-            if(!navigator.onLine) return showModal("Error", "You must be online to update payment statuses.", "error");
+            if(!isActuallyOnline) return showModal("Error", "You must be online to update payment statuses.", "error");
             try {
                 const res = await fetch(`https://api.mafralodge.online/api/orders/${orderId}/status`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -666,7 +692,7 @@
         }
 
         async function createNewProduct() {
-            if(!navigator.onLine) return showModal("Error", "You must be online to alter the database.", "error");
+            if(!isActuallyOnline) return showModal("Error", "You must be online to alter the database.", "error");
             const name = document.getElementById('new-prod-name').value;
             const type = document.getElementById('new-prod-type').value;
             const price = document.getElementById('new-prod-price').value;
@@ -685,7 +711,7 @@
         }
 
         async function updateProduct(id) {
-            if(!navigator.onLine) return showModal("Error", "You must be online to alter the database.", "error");
+            if(!isActuallyOnline) return showModal("Error", "You must be online to alter the database.", "error");
             const price = document.getElementById(`price-${id}`).value;
             const addedStock = document.getElementById(`addstock-${id}`).value;
             try {
@@ -704,7 +730,7 @@
         }
 
         async function deleteProduct(id, name) {
-            if(!navigator.onLine) return showModal("Error", "You must be online to alter the database.", "error");
+            if(!isActuallyOnline) return showModal("Error", "You must be online to alter the database.", "error");
             if(!confirm(`Delete "${name}"?`)) return;
             try {
                 const res2 = await fetch(`https://api.mafralodge.online/api/products/${id}`, { method: 'DELETE' });

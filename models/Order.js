@@ -9,7 +9,8 @@ const orderItemSchema = new mongoose.Schema({
     unit_price: { type: Number, required: true },
     kds_status: { type: String, enum: ['pending', 'preparing', 'ready', 'served'], default: 'pending' }
 }, { _id: false });
-
+// In your models/Order.js
+OrderSchema.index({ createdAt: -1 });
 const orderSchema = new mongoose.Schema({
     _id: { type: String, default: uuidv4 },
     user_id: { type: String, ref: 'User' }, // The ID of the Admin/Cashier

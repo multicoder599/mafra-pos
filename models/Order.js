@@ -9,8 +9,8 @@ const orderItemSchema = new mongoose.Schema({
     unit_price: { type: Number, required: true },
     kds_status: { type: String, enum: ['pending', 'preparing', 'ready', 'served'], default: 'pending' }
 }, { _id: false });
-// In your models/Order.js
-OrderSchema.index({ createdAt: -1 });
+
+// 1. FIRST, define the main order schema
 const orderSchema = new mongoose.Schema({
     _id: { type: String, default: uuidv4 },
     user_id: { type: String, ref: 'User' }, // The ID of the Admin/Cashier
@@ -29,5 +29,8 @@ const orderSchema = new mongoose.Schema({
     
     sync_status: { type: String, enum: ['synced', 'pending_sync'], default: 'pending_sync' }
 }, { timestamps: true });
+
+// 2. 👉 FIX: THEN add the index using the exact lowercase variable name
+orderSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Order', orderSchema);

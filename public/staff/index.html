@@ -150,7 +150,7 @@
 
     <script>
         let currentUsername = localStorage.getItem('staff_username') || '';
-        let isClockedIn = localStorage.getItem('staff_is_clocked_in') === 'true';
+        let isClockedIn = localStorage.getItem(`staff_is_clocked_in_${currentUsername}`) === 'true';
 
         // --- MOBILE MENU LOGIC ---
         function toggleSidebar() {
@@ -179,26 +179,29 @@
 
         // --- AUTHENTICATION ---
         async function attemptLogin() {
-            const username = document.getElementById('username').value;
-            const pin = document.getElementById('pin').value;
-            try {
-                const response = await fetch('http://213.199.41.83:5000/api/login', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, pin, attemptedRole: 'staff' })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    localStorage.setItem('staff_logged_in', 'true');
-                    localStorage.setItem('staff_username', username);
-                    currentUsername = username;
-                    document.getElementById('staff-name-display').innerText = username;
-                    
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('app-screen').style.display = 'flex';
-                    renderClockUI();
-                } else alert(data.message);
-            } catch (error) { alert("Could not connect to server."); }
-        }
+    const username = document.getElementById('username').value;
+    const pin = document.getElementById('pin').value;
+    try {
+        const response = await fetch('http://213.199.41.83:5000/api/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, pin, attemptedRole: 'staff' })
+        });
+        const data = await response.json();
+        if (data.success) {
+            localStorage.setItem('staff_logged_in', 'true');
+            localStorage.setItem('staff_username', username);
+            currentUsername = username;
+            
+            // 👉 NEW: Check THIS user's specific clock status after login
+            isClockedIn = localStorage.getItem(`staff_is_clocked_in_${username}`) === 'true';
+            
+            document.getElementById('staff-name-display').innerText = username;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex';
+            renderClockUI();
+        } else alert(data.message);
+    } catch (error) { alert("Could not connect to server."); }
+}
 
         function logout() {
             localStorage.removeItem('staff_logged_in');
@@ -225,30 +228,34 @@
         }
 
         async function toggleClock() {
-            const action = isClockedIn ? 'out' : 'in';
+    const action = isClockedIn ? 'out' : 'in';
 
-            try {
-                const response = await fetch('http://213.199.41.83:5000/api/attendance', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentUsername, action })
-                });
-                const data = await response.json();
+    try {
+        const response = await fetch('http://213.199.41.83:5000/api/attendance', {
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUsername, action })
+        });
+        const data = await response.json();
 
-                if (data.success) {
-                    isClockedIn = !isClockedIn;
-                    localStorage.setItem('staff_is_clocked_in', isClockedIn);
-                    renderClockUI();
-                    
-                    if(isClockedIn) alert("Successfully Punched In. Have a great shift!");
-                    else alert("Successfully Punched Out. Good work today!");
-                } else {
-                    alert("Error: " + data.message);
-                }
-            } catch (error) {
-                console.error("Clocking error:", error);
-                alert("Could not connect to the server to record attendance.");
-            }
+        if (data.success) {
+            isClockedIn = !isClockedIn;
+            
+            // 👉 FIXED: Save using the specific username so it doesn't affect others
+            localStorage.setItem(`staff_is_clocked_in_${currentUsername}`, isClockedIn);
+            
+            renderClockUI();
+            
+            if(isClockedIn) alert(`Check-in successful! Have a great shift, ${currentUsername}!`);
+            else alert(`Check-out successful! Goodbye, ${currentUsername}!`);
+        } else {
+            alert("Error: " + data.message);
         }
+    } catch (error) {
+        console.error("Clocking error:", error);
+        alert("Could not connect to the server.");
+    }
+}
         
     </script>
 </body>

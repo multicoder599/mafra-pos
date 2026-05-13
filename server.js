@@ -136,21 +136,29 @@ apiApp.post('/api/attendance', async (req, res) => {
         const user = await User.findOne({ username });
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-        const safeUserId = String(user._id);
+        const userIdString = String(user._id);
 
         if (action === 'in') {
-            await Attendance.create({ user_id: safeUserId, status: 'clocked_in' });
+            // Check if they are already clocked in to prevent double-punches
+            const alreadyIn = await Attendance.findOne({ user_id: userIdString, status: 'clocked_in' });
+            if (alreadyIn) return res.status(400).json({ success: false, message: 'Already clocked in' });
+
+            await Attendance.create({ user_id: userIdString, status: 'clocked_in' });
             res.json({ success: true, message: 'Clocked In Successfully' });
         } else if (action === 'out') {
-            await Attendance.findOneAndUpdate(
-                { user_id: safeUserId, status: 'clocked_in' },
+            // 👉 CRITICAL: Find ONLY the open record for THIS specific user
+            const record = await Attendance.findOneAndUpdate(
+                { user_id: userIdString, status: 'clocked_in' }, // Must match this user
                 { clock_out: Date.now(), status: 'clocked_out' },
-                { sort: { clock_in: -1 } }
+                { sort: { clock_in: -1 }, new: true }
             );
+
+            if (!record) return res.status(400).json({ success: false, message: 'No active clock-in found for this user' });
+            
             res.json({ success: true, message: 'Clocked Out Successfully' });
         }
     } catch (error) {
-        res.status(500).json({ success: false, message: `Server error saving attendance: ${error.message}` });
+        res.status(500).json({ success: false, message: `Server error: ${error.message}` });
     }
 });
 

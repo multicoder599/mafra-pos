@@ -430,21 +430,28 @@
                             ? `<button class="btn btn-suspend" onclick="toggleStaffStatus('${user._id}', false)" title="Suspend Account"><i class="fa-solid fa-ban"></i> <span>Suspend</span></button>`
                             : `<button class="btn btn-activate" onclick="toggleStaffStatus('${user._id}', true)" title="Activate Account"><i class="fa-solid fa-check"></i> <span>Activate</span></button>`;
 
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>
-                                <strong style="font-size:16px;">${user.username}</strong><br>
-                                <span style="color:#6c757d; font-size:12px; text-transform:uppercase;">${user.role}</span>
-                            </td>
-                            <td>${statusBadge}</td>
-                            <td>${attHtml}</td>
-                            <td>
-                                <button class="btn btn-edit" onclick="editUsername('${user._id}', '${user.username}')" title="Edit Username"><i class="fa-solid fa-pen"></i> <span>Edit Name</span></button>
-                                ${toggleBtn}
-                                <button class="btn btn-edit" onclick="changePassword('${user._id}', '${user.username}')" title="Change Password"><i class="fa-solid fa-key"></i></button>
-                                <button class="btn btn-delete" onclick="deleteStaff('${user._id}', '${user.username}')" title="Delete User"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        `;
+                        // Inside fetchStaffAndAttendance, where you create the table rows:
+const tr = document.createElement('tr');
+tr.innerHTML = `
+    <td>
+        <strong style="font-size:16px;">${user.username}</strong><br>
+        <span style="color:#6c757d; font-size:12px; text-transform:uppercase;">${user.role}</span>
+    </td>
+    <td>${statusBadge}</td>
+    <td>${attHtml}</td>
+    <td>
+        <button class="btn btn-edit" onclick="editUsername('${user._id}', '${user.username}')">
+            <i class="fa-solid fa-pen"></i> <span>Edit Name</span>
+        </button>
+        ${toggleBtn}
+        <button class="btn btn-edit" onclick="changePassword('${user._id}', '${user.username}')">
+            <i class="fa-solid fa-key"></i>
+        </button>
+        <button class="btn btn-delete" onclick="deleteStaff('${user._id}', '${user.username}')">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    </td>
+`;
                         tbody.appendChild(tr);
                     });
                 }

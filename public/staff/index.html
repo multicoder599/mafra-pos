@@ -3,143 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mafra Lodge - Staff Timeclock</title>
+    <title>Mafra Lodge - Staff Portal</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cause:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * { box-sizing: border-box; font-family: 'Cause', sans-serif; }
-        body { margin: 0; background-color: #f4f6f9; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        #login-screen { display: flex; height: 100vh; width: 100vw; background-image: url('background.png'); background-size: cover; background-position: center; position: absolute; top: 0; left: 0; align-items: center; justify-content: flex-start; padding-left: 8%; z-index: 1000; }
-        #login-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1; }
-        .login-box { position: relative; z-index: 2; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 45px 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 100%; max-width: 400px; }
-        .login-box h2 { font-size: 32px; color: #333; margin-top: 0; margin-bottom: 10px; }
-        .login-box p { color: #6c757d; margin-bottom: 30px; font-size: 15px; }
-        .login-box label { font-weight: bold; font-size: 14px; color: #495057; display: block; margin-bottom: 8px; }
-        .login-box input { width: 100%; padding: 15px; margin-bottom: 25px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; transition: 0.2s; }
-        .login-box button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
-        #app-screen { display: none; height: 100vh; width: 100vw; flex-direction: row; }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-        .sidebar { width: 240px; background: #343a40; color: white; padding: 20px; display: flex; flex-direction: column; transition: 0.3s ease; z-index: 1000; }
-        .sidebar h2 { margin-top: 0; color: #fff; border-bottom: 1px solid #4f5962; padding-bottom: 20px; font-size: 22px; text-align: center; }
-        .staff-info { padding: 20px 15px; background: #2b3035; border-radius: 8px; margin-bottom: 20px; text-align: center; color: #adb5bd; font-size: 16px; }
-        .nav-item { padding: 15px; margin: 5px 0; background: #007bff; border-radius: 5px; font-weight: bold; color: white; font-size: 15px; display: flex; align-items: center; gap: 12px; }
-        .btn-logout { background: #dc3545; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; margin-top: auto; font-weight: bold; text-align: center; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
-        .content-wrapper { flex: 1; display: flex; flex-direction: column; height: 100vh; }
-        .mobile-header { display: none; background: #fff; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-items: center; justify-content: space-between; z-index: 10; width: 100%; }
-        .hamburger-btn { background: none; border: none; font-size: 24px; color: #333; cursor: pointer; }
-        .main-content { flex: 1; display: flex; justify-content: center; align-items: center; background: #f4f6f9; overflow-y: auto; padding: 20px; }
-        .timeclock-widget { background: white; padding: 50px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; width: 100%; max-width: 500px; border: 1px solid #eee; }
-        .date-display { color: #6c757d; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        .time-display { font-size: 64px; font-weight: bold; color: #343a40; margin: 0 0 30px 0; letter-spacing: -2px; }
-        .status-badge { display: inline-block; padding: 8px 20px; border-radius: 30px; font-size: 14px; font-weight: bold; text-transform: uppercase; margin-bottom: 40px; }
-        .status-badge.out { background: #ffeeba; color: #004085; }
-        .status-badge.in { background: #d4edda; color: #155724; }
-        .punch-btn { width: 100%; padding: 25px; border-radius: 12px; border: none; font-size: 24px; font-weight: bold; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center; gap: 15px; }
-        .punch-btn.btn-in { background: #28a745; }
-        .punch-btn.btn-out { background: #dc3545; }
-        @media (max-width: 768px) { #app-screen { flex-direction: column; } .mobile-header { display: flex; } .sidebar { position: fixed; left: -260px; height: 100vh; width: 260px; } .sidebar.open { left: 0; } .sidebar-overlay.open { display: block; } #login-screen { padding-left: 0; justify-content: center; } .time-display { font-size: 46px; } }
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --dark: #1a1d21;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { 
+            margin: 0; 
+            background: #f0f2f5; 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column;
+            color: var(--dark);
+        }
+
+        /* --- MODERN LOGIN --- */
+        #login-screen { 
+            display: flex; height: 100vh; width: 100vw; 
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('background.png'); 
+            background-size: cover; background-position: center;
+            position: fixed; top: 0; left: 0; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .login-box { 
+            background: var(--glass); backdrop-filter: blur(15px);
+            padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            width: 90%; max-width: 400px; text-align: center;
+        }
+        .login-box h2 { font-weight: 800; font-size: 28px; margin-bottom: 8px; color: #111; }
+        .login-box input { 
+            width: 100%; padding: 16px; margin: 10px 0 20px 0; 
+            border: 1px solid #ddd; border-radius: 12px; font-size: 16px; background: #fff;
+        }
+        .login-box button { 
+            width: 100%; padding: 16px; background: var(--primary); color: white; 
+            border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer;
+        }
+
+        /* --- APP LAYOUT --- */
+        #app-screen { 
+            display: none; height: 100vh; flex-direction: column; 
+            background: #f8f9fa;
+        }
+
+        /* Top Modern Header */
+        .app-header {
+            background: #fff;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.04);
+            z-index: 100;
+        }
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f1f3f5;
+            padding: 8px 16px;
+            border-radius: 50px;
+        }
+        .user-pill i { color: var(--primary); font-size: 20px; }
+        .user-pill span { font-weight: 700; font-size: 14px; }
+
+        .logout-btn-top {
+            color: var(--danger);
+            background: #fff0f0;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Main Center Widget */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 25px;
+        }
+
+        .date-container { text-align: center; }
+        .date-container div { color: #6c757d; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; font-size: 13px; }
+        .date-container h1 { font-size: 56px; margin: 5px 0; font-weight: 800; letter-spacing: -2px; color: #111; }
+
+        .status-card {
+            background: white;
+            width: 100%;
+            max-width: 350px;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            text-align: center;
+            border: 1px solid #fff;
+        }
+
+        .status-icon-circle {
+            width: 80px; height: 80px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px auto; font-size: 30px;
+        }
+        .status-icon-circle.out { background: #fff4e5; color: #f08c00; }
+        .status-icon-circle.in { background: #ebfbee; color: #40c057; }
+
+        .status-text { font-size: 14px; font-weight: 600; color: #868e96; margin-bottom: 5px; }
+        .status-value { font-size: 20px; font-weight: 800; margin-bottom: 25px; }
+
+        .action-button {
+            width: 100%;
+            padding: 20px;
+            border-radius: 20px;
+            border: none;
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .btn-in { background: var(--success); }
+        .btn-out { background: var(--danger); }
+        .action-button:active { transform: scale(0.96); }
+        .action-button:disabled { background: #adb5bd; cursor: not-allowed; }
+
+        /* Mobile specific Bottom Decoration */
+        .bottom-decor {
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #adb5bd;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .date-container h1 { font-size: 48px; }
+            .status-card { padding: 25px; }
+        }
     </style>
 </head>
 <body>
+
     <div id="login-screen">
         <div class="login-box">
-            <h2>Staff Timeclock</h2>
-            <p>Log in to record your shift attendance.</p>
-            <label>Username</label>
-            <input type="text" id="username" placeholder="e.g. faith">
-            <label>Password / PIN</label>
-            <input type="password" id="pin" placeholder="••••">
-            <button onclick="attemptLogin()">Secure Log In</button>
+            <i class="fa-solid fa-hotel" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+            <h2>Staff Portal</h2>
+            <p style="color: #666; font-size: 14px;">Welcome to Mafra Lodge</p>
+            
+            <div style="text-align: left; margin-top: 20px;">
+                <label style="font-size: 12px; font-weight: 800; color: #888;">USERNAME</label>
+                <input type="text" id="username" placeholder="Enter your name">
+                
+                <label style="font-size: 12px; font-weight: 800; color: #888;">ACCESS PIN</label>
+                <input type="password" id="pin" placeholder="••••">
+            </div>
+            
+            <button onclick="attemptLogin()">Sign In <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i></button>
         </div>
     </div>
+
     <div id="app-screen">
-        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-        <div class="sidebar" id="sidebar">
-            <h2>Mafra Lodge</h2>
-            <div class="staff-info">
-                <i class="fa-solid fa-circle-user" style="font-size: 32px; display: block; margin-bottom: 10px; color: #fff;"></i>
-                <div id="staff-name-display" style="color: #fff; font-weight: bold; font-size: 18px;">---</div>
-                <div style="font-size: 12px; margin-top: 5px; text-transform: uppercase;">Waitstaff</div>
+        
+        <header class="app-header">
+            <div class="user-pill">
+                <i class="fa-solid fa-circle-user"></i>
+                <span id="staff-name-display">Loading...</span>
             </div>
-            <div class="nav-item"><i class="fa-solid fa-business-time"></i> Shift Check-In</div>
-            <div style="flex-grow: 1;"></div>
-            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
-        </div>
-        <div class="content-wrapper">
-            <div class="mobile-header">
-                <h2 style="margin: 0; font-size: 20px;">Timeclock</h2>
-                <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+            <button class="logout-btn-top" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </header>
+
+        <main class="main-container">
+            
+            <div class="date-container">
+                <div id="live-date">Monday, May 13, 2026</div>
+                <h1 id="live-time">00:00:00</h1>
             </div>
-            <div class="main-content">
-                <div class="timeclock-widget">
-                    <div class="date-display" id="live-date">---</div>
-                    <h1 class="time-display" id="live-time">00:00:00</h1>
-                    <div id="status-indicator" class="status-badge out">Checking Status...</div>
-                    <button id="clock-action-btn" class="punch-btn btn-in" onclick="toggleClock()" disabled>
-                        <i class="fa-solid fa-spinner fa-spin"></i> PLEASE WAIT
-                    </button>
+
+            <div class="status-card">
+                <div id="status-icon" class="status-icon-circle out">
+                    <i class="fa-solid fa-door-closed"></i>
                 </div>
+                <div class="status-text">CURRENT SHIFT STATUS</div>
+                <div id="status-indicator" class="status-value">Checking...</div>
+                
+                <button id="clock-action-btn" class="action-button btn-in" onclick="toggleClock()" disabled>
+                    <i class="fa-solid fa-spinner fa-spin"></i> PLEASE WAIT
+                </button>
             </div>
-        </div>
+
+            <div class="bottom-decor">
+                <i class="fa-solid fa-shield-halved"></i> SECURE STAFF TERMINAL v2.0
+            </div>
+
+        </main>
     </div>
+
     <script>
         const API_URL = "http://213.199.41.83:5000";
         let currentUsername = localStorage.getItem('staff_username') || '';
         let isClockedIn = false;
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebar-overlay').classList.toggle('open');
-        }
-
+        // --- CLOCK LOGIC ---
         function updateClock() {
             const now = new Date();
-            document.getElementById('live-time').innerText = now.toLocaleTimeString('en-US', { hour12: false });
-            document.getElementById('live-date').innerText = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            document.getElementById('live-time').innerText = now.toLocaleTimeString('en-GB');
+            document.getElementById('live-date').innerText = now.toLocaleDateString('en-US', { 
+                weekday: 'long', month: 'long', day: 'numeric' 
+            });
         }
         setInterval(updateClock, 1000);
         updateClock();
 
+        // --- AUTH & SYNC ---
         document.addEventListener("DOMContentLoaded", () => {
             if(localStorage.getItem('staff_logged_in') === 'true') {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-screen').style.display = 'flex'; 
-                document.getElementById('staff-name-display').innerText = currentUsername;
-                syncStatusWithServer();
+                showApp();
             }
         });
 
-        // 👉 NEW: This asks the DATABASE for the real status
-        async function syncStatusWithServer() {
-            try {
-                const response = await fetch(`${API_URL}/api/attendance`);
-                const data = await response.json();
-                if (data.success) {
-                    // Filter logs for this specific staff member
-                    // We need to fetch the staff list to get the ID, or just check username if backend allows
-                    const staffResponse = await fetch(`${API_URL}/api/staff`);
-                    const staffData = await staffResponse.json();
-                    const user = staffData.staff.find(s => s.username === currentUsername);
-                    
-                    if (user) {
-                        const userLogs = data.records.filter(r => r.user_id === String(user._id));
-                        // If the latest log has no clock_out, they are IN
-                        if (userLogs.length > 0 && !userLogs[0].clock_out) {
-                            isClockedIn = true;
-                        } else {
-                            isClockedIn = false;
-                        }
-                    }
-                    renderClockUI();
-                }
-            } catch (e) { console.error("Sync error:", e); }
+        function showApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex'; 
+            document.getElementById('staff-name-display').innerText = currentUsername;
+            syncStatusWithServer();
         }
 
         async function attemptLogin() {
             const username = document.getElementById('username').value;
             const pin = document.getElementById('pin').value;
+            if(!username || !pin) return alert("Please fill in all fields.");
+
             try {
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -150,56 +270,74 @@
                     localStorage.setItem('staff_logged_in', 'true');
                     localStorage.setItem('staff_username', username);
                     currentUsername = username;
-                    document.getElementById('staff-name-display').innerText = username;
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('app-screen').style.display = 'flex';
-                    syncStatusWithServer();
+                    showApp();
                 } else alert(data.message);
-            } catch (error) { alert("Could not connect to server."); }
+            } catch (error) { alert("Connection Error. Check Wi-Fi."); }
+        }
+
+        async function syncStatusWithServer() {
+            try {
+                const attRes = await fetch(`${API_URL}/api/attendance`);
+                const attData = await attRes.json();
+                const staffRes = await fetch(`${API_URL}/api/staff`);
+                const staffData = await staffRes.json();
+                
+                const user = staffData.staff.find(s => s.username === currentUsername);
+                if (user && attData.success) {
+                    const userLogs = attData.records.filter(r => r.user_id === String(user._id));
+                    isClockedIn = (userLogs.length > 0 && !userLogs[0].clock_out);
+                    renderClockUI();
+                }
+            } catch (e) { console.error("Sync error:", e); }
         }
 
         function renderClockUI() {
             const btn = document.getElementById('clock-action-btn');
-            const badge = document.getElementById('status-indicator');
+            const indicator = document.getElementById('status-indicator');
+            const icon = document.getElementById('status-icon');
             btn.disabled = false;
 
             if (isClockedIn) {
-                btn.className = 'punch-btn btn-out';
+                btn.className = 'action-button btn-out';
                 btn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> PUNCH OUT';
-                badge.className = 'status-badge in';
-                badge.innerText = 'Currently: CLOCKED IN';
+                indicator.innerText = 'CLOCKED IN';
+                indicator.style.color = 'var(--success)';
+                icon.className = 'status-icon-circle in';
+                icon.innerHTML = '<i class="fa-solid fa-door-open"></i>';
             } else {
-                btn.className = 'punch-btn btn-in';
+                btn.className = 'action-button btn-in';
                 btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> PUNCH IN';
-                badge.className = 'status-badge out';
-                badge.innerText = 'Currently: CLOCKED OUT';
+                indicator.innerText = 'CLOCKED OUT';
+                indicator.style.color = '#f08c00';
+                icon.className = 'status-icon-circle out';
+                icon.innerHTML = '<i class="fa-solid fa-door-closed"></i>';
             }
         }
 
         async function toggleClock() {
-            const action = isClockedIn ? 'out' : 'in';
             const btn = document.getElementById('clock-action-btn');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PROCESSING...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SYNCING...';
 
             try {
                 const response = await fetch(`${API_URL}/api/attendance`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentUsername, action })
+                    body: JSON.stringify({ username: currentUsername, action: isClockedIn ? 'out' : 'in' })
                 });
                 const data = await response.json();
                 if (data.success) {
                     isClockedIn = !isClockedIn;
                     renderClockUI();
-                    alert(isClockedIn ? "Punched In Successfully!" : "Punched Out Successfully!");
-                } else alert("Error: " + data.message);
-            } catch (error) { alert("Server connection failed."); }
+                } else alert(data.message);
+            } catch (error) { alert("Update failed. Check internet."); }
             btn.disabled = false;
         }
 
         function logout() {
-            localStorage.clear();
-            location.reload(); 
+            if(confirm("Are you sure you want to logout?")) {
+                localStorage.clear();
+                location.reload(); 
+            }
         }
     </script>
 </body>

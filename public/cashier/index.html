@@ -291,10 +291,10 @@
         </div>
     </div>
 
-    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script src="http://213.199.41.83:5000/socket.io/socket.io.js"></script>
 
     <script>
-        const socket = io('http://localhost:5000'); 
+        const socket = io('http://213.199.41.83:5000'); 
         
         // Caching Logic
         let cart = JSON.parse(localStorage.getItem('cashier_cart')) || [];
@@ -350,7 +350,7 @@
 
             for (let orderPayload of pendingOrders) {
                 try {
-                    await fetch('http://localhost:5000/api/orders', {
+                    await fetch('http://213.199.41.83:5000/api/orders', {
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(orderPayload)
@@ -383,7 +383,7 @@
             const username = document.getElementById('username').value;
             const pin = document.getElementById('pin').value;
             try {
-                const response = await fetch('http://localhost:5000/api/login', {
+                const response = await fetch('http://213.199.41.83:5000/api/login', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, pin, attemptedRole: 'cashier' })
                 });
@@ -409,7 +409,7 @@
         async function fetchAndRenderProducts() {
             if(!navigator.onLine) return; // Prevent fetch if offline
             try {
-                const response = await fetch('http://localhost:5000/api/products');
+                const response = await fetch('http://213.199.41.83:5000/api/products');
                 const data = await response.json();
                 if (data.success) {
                     allProducts = data.products;
@@ -531,7 +531,7 @@
             // 👉 THE OFFLINE / ONLINE DECISION
             if (navigator.onLine) {
                 try {
-                    const response = await fetch('http://localhost:5000/api/orders', {
+                    const response = await fetch('http://213.199.41.83:5000/api/orders', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(orderPayload)
                     });
@@ -559,7 +559,7 @@
         async function fetchHistory() {
             if(!navigator.onLine) return; // Cannot fetch history offline
             try {
-                const response = await fetch('http://localhost:5000/api/orders');
+                const response = await fetch('http://213.199.41.83:5000/api/orders');
                 const data = await response.json();
                 if (data.success) {
                     const tbody = document.getElementById('history-tbody');
@@ -589,7 +589,7 @@
         async function markPaid(orderId) {
             if(!navigator.onLine) return alert("You must be online to update payment statuses.");
             try {
-                const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+                const res = await fetch(`http://213.199.41.83:5000/api/orders/${orderId}/status`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: 'completed' })
                 });
@@ -628,7 +628,7 @@
             const stock = document.getElementById('new-prod-stock').value;
             if(!name || !price) return alert("Name and Price required.");
             try {
-                const res = await fetch('http://localhost:5000/api/products', {
+                const res = await fetch('http://213.199.41.83:5000/api/products', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, type, price, stock })
                 });
@@ -644,7 +644,7 @@
             const price = document.getElementById(`price-${id}`).value;
             const addedStock = document.getElementById(`addstock-${id}`).value;
             try {
-                const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+                const res = await fetch(`http://213.199.41.83:5000/api/products/${id}`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ price, addedStock })
                 });
                 if((await res.json()).success) fetchAndRenderProducts();
@@ -655,7 +655,7 @@
             if(!navigator.onLine) return alert("You must be online to alter the database.");
             if(!confirm(`Delete "${name}"?`)) return;
             try {
-                const res = await fetch(`http://localhost:5000/api/products/${id}`, { method: 'DELETE' });
+                const res = await fetch(`http://213.199.41.83:5000/api/products/${id}`, { method: 'DELETE' });
                 if((await res.json()).success) fetchAndRenderProducts();
             } catch(e) { console.error(e); }
         }

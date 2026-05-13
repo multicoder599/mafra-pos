@@ -182,7 +182,7 @@
             const username = document.getElementById('username').value;
             const pin = document.getElementById('pin').value;
             try {
-                const response = await fetch('http://localhost:5000/api/login', {
+                const response = await fetch('http://213.199.41.83:5000/api/login', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, pin, attemptedRole: 'staff' })
                 });
@@ -228,7 +228,7 @@
             const action = isClockedIn ? 'out' : 'in';
 
             try {
-                const response = await fetch('http://localhost:5000/api/attendance', {
+                const response = await fetch('http://213.199.41.83:5000/api/attendance', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: currentUsername, action })
                 });

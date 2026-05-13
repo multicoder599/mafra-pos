@@ -315,10 +315,10 @@ apiServer.listen(API_PORT, () => {
 // ==========================================
 function createFrontendServer(folderName, port, displayName) {
     const app = express();
-    app.use(express.static(path.join(__dirname, `../public/${folderName}`)));
+    app.use(express.static(path.join(__dirname, `public/${folderName}`)));
     
     app.get(/.*/, (req, res) => {
-        res.sendFile(path.join(__dirname, `../public/${folderName}/index.html`));
+        res.sendFile(path.join(__dirname, `public/${folderName}/index.html`));
     });
 
     app.listen(port, () => {

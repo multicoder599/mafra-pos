@@ -269,7 +269,7 @@
             const username = document.getElementById('username').value;
             const pin = document.getElementById('pin').value;
             try {
-                const response = await fetch('http://localhost:5000/api/login', {
+                const response = await fetch('http://213.199.41.83:5000/api/login', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, pin, attemptedRole: 'admin' }) 
                 });
@@ -308,7 +308,7 @@
         // --- 4. DAILY SALES & PROFIT DATA ---
         async function fetchOrders() {
             try {
-                const response = await fetch('http://localhost:5000/api/orders');
+                const response = await fetch('http://213.199.41.83:5000/api/orders');
                 const data = await response.json();
                 if (data.success) {
                     const tbody = document.getElementById('orders-tbody');
@@ -375,7 +375,7 @@
         // --- 5. INVENTORY DATA ---
         async function fetchInventory() {
             try {
-                const response = await fetch('http://localhost:5000/api/products');
+                const response = await fetch('http://213.199.41.83:5000/api/products');
                 const data = await response.json();
                 if (data.success) {
                     const tbody = document.getElementById('inventory-tbody');
@@ -400,8 +400,8 @@
         async function fetchStaffAndAttendance() {
             try {
                 const [staffRes, attRes] = await Promise.all([
-                    fetch('http://localhost:5000/api/staff'),
-                    fetch('http://localhost:5000/api/attendance')
+                    fetch('http://213.199.41.83:5000/api/staff'),
+                    fetch('http://213.199.41.83:5000/api/attendance')
                 ]);
                 
                 const staffData = await staffRes.json();
@@ -459,7 +459,7 @@
             if(!name || !pin) return alert("Please fill in both Username and Password.");
 
             try {
-                const response = await fetch('http://localhost:5000/api/staff', {
+                const response = await fetch('http://213.199.41.83:5000/api/staff', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: name, role: role, pin: pin }) 
                 });
@@ -478,7 +478,7 @@
             if (!newName || newName === oldName) return; 
 
             try {
-                const response = await fetch(`http://localhost:5000/api/staff/${userId}/edit`, {
+                const response = await fetch(`http://213.199.41.83:5000/api/staff/${userId}/edit`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: newName })
                 });
@@ -493,7 +493,7 @@
             if (!confirm(`Are you sure you want to ${actionText} this account?`)) return;
 
             try {
-                const response = await fetch(`http://localhost:5000/api/staff/${userId}/edit`, {
+                const response = await fetch(`http://213.199.41.83:5000/api/staff/${userId}/edit`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ isActive: makeActive })
                 });
@@ -508,7 +508,7 @@
             if (!newPassword) return; 
 
             try {
-                const response = await fetch(`http://localhost:5000/api/staff/${userId}/password`, {
+                const response = await fetch(`http://213.199.41.83:5000/api/staff/${userId}/password`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ newPin: newPassword })
                 });
@@ -521,7 +521,7 @@
         async function deleteStaff(userId, username) {
             if (!confirm(`Are you sure you want to completely delete ${username}? This cannot be undone.`)) return;
             try {
-                const response = await fetch(`http://localhost:5000/api/staff/${userId}`, { method: 'DELETE' });
+                const response = await fetch(`http://213.199.41.83:5000/api/staff/${userId}`, { method: 'DELETE' });
                 const data = await response.json();
                 if (data.success) fetchStaffAndAttendance(); 
                 else alert("Failed to delete: " + data.message);

@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
+const mongoose = require('mongoose'); // 👉 NEW: Added mongoose here to define the schema directly
 require('dotenv').config();
 
 // --- DATABASE MODELS ---
@@ -11,6 +12,15 @@ const User = require('./models/User');
 const Product = require('./models/Product');
 const Order = require('./models/Order');
 const Attendance = require('./models/Attendance'); 
+
+// 👉 NEW: Define the Anti-Cheat Stock Audit Log Schema right here
+const StockLogSchema = new mongoose.Schema({
+    item_name: String,
+    qty_added: Number,
+    cashier_name: String,
+    createdAt: { type: Date, default: Date.now }
+});
+const StockLog = mongoose.model('StockLog', StockLogSchema);
 
 // 1. Connect to Database
 connectDB();
@@ -139,16 +149,14 @@ apiApp.post('/api/attendance', async (req, res) => {
         const userIdString = String(user._id);
 
         if (action === 'in') {
-            // Check if they are already clocked in to prevent double-punches
             const alreadyIn = await Attendance.findOne({ user_id: userIdString, status: 'clocked_in' });
             if (alreadyIn) return res.status(400).json({ success: false, message: 'Already clocked in' });
 
             await Attendance.create({ user_id: userIdString, status: 'clocked_in' });
             res.json({ success: true, message: 'Clocked In Successfully' });
         } else if (action === 'out') {
-            // 👉 CRITICAL: Find ONLY the open record for THIS specific user
             const record = await Attendance.findOneAndUpdate(
-                { user_id: userIdString, status: 'clocked_in' }, // Must match this user
+                { user_id: userIdString, status: 'clocked_in' }, 
                 { clock_out: Date.now(), status: 'clocked_out' },
                 { sort: { clock_in: -1 }, new: true }
             );
@@ -163,7 +171,7 @@ apiApp.post('/api/attendance', async (req, res) => {
 });
 
 // ------------------------------------------
-// PRODUCTS & INVENTORY
+// PRODUCTS, INVENTORY & AUDIT LOGS
 // ------------------------------------------
 apiApp.get('/api/products', async (req, res) => {
     try {
@@ -190,16 +198,25 @@ apiApp.post('/api/products', async (req, res) => {
     }
 });
 
+// 👉 UPDATED: Now listens for addedStock and creates an audit log!
 apiApp.patch('/api/products/:id', async (req, res) => {
     try {
-        const { price, addedStock } = req.body;
+        const { price, addedStock, cashierName } = req.body; 
         const product = await Product.findById(req.params.id);
         
         if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
         if (price !== undefined && price !== '') product.price = Number(price);
-        if (addedStock !== undefined && addedStock !== '') {
+        
+        // If stock is added, update it AND write an audit log
+        if (addedStock && Number(addedStock) > 0) {
             product.stock = (product.stock || 0) + Number(addedStock);
+            
+            await StockLog.create({
+                item_name: product.name,
+                qty_added: Number(addedStock),
+                cashier_name: cashierName || "Unknown Cashier" 
+            });
         }
 
         await product.save();
@@ -216,6 +233,16 @@ apiApp.delete('/api/products/:id', async (req, res) => {
     } catch (error) {
         console.error('Error deleting product:', error);
         res.status(500).json({ success: false, message: `DB Error: ${error.message}` });
+    }
+});
+
+// 👉 NEW ROUTE: Fetch the anti-cheat logs for the Admin Panel
+apiApp.get('/api/stock-logs', async (req, res) => {
+    try {
+        const logs = await StockLog.find().sort({ createdAt: -1 }).limit(50);
+        res.json({ success: true, logs });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -242,29 +269,26 @@ apiApp.get('/api/orders', async (req, res) => {
     }
 });
 
-// 👉 UPDATED: Auto-Stock Deduction and Customer Name capturing!
 apiApp.post('/api/orders', async (req, res) => {
     try {
         const { items, total_amount, table_number, served_by, customer_name } = req.body;
         const adminUser = await User.findOne({ username: 'admin' }); 
 
-        // 1. Create the order with 'pending' status
         const newOrder = await Order.create({
             user_id: adminUser ? adminUser._id : null,
             table_number: table_number || 'Walk-in',
             items: items,
             total_amount: total_amount,
-            status: 'pending', // Order starts as Pending
+            status: 'pending',
             served_by: served_by || 'Cashier',
-            customer_name: customer_name || 'WALK-IN' // Save the Waiter/Customer name
+            customer_name: customer_name || 'WALK-IN' 
         });
 
-        // 2. AUTO-REDUCE STOCK in the database
         if (items && items.length > 0) {
             for (let item of items) {
                 if (item.product_id) {
                     await Product.findByIdAndUpdate(item.product_id, {
-                        $inc: { stock: -item.quantity } // Dynamically subtract the quantity bought
+                        $inc: { stock: -item.quantity } 
                     });
                 }
             }

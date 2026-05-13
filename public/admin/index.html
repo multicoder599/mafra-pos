@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mafra Lodge - Admin Master Dashboard</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,57 +39,47 @@
         
         .sidebar { width: 260px; background: #343a40; color: white; padding: 20px; display: flex; flex-direction: column; transition: 0.3s ease; z-index: 1000; }
         .sidebar h2 { margin-top: 0; color: #fff; border-bottom: 1px solid #4f5962; padding-bottom: 20px; text-align: center; }
-        .nav-item { padding: 15px; margin: 5px 0; background: transparent; border-radius: 5px; cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 12px; }
+        .nav-item { padding: 15px; margin: 5px 0; background: transparent; border-radius: 5px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-content { display: flex; align-items: center; gap: 12px; }
         .nav-item.active { background: #007bff; font-weight: bold; }
         .btn-logout { background: #dc3545; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; margin-top: auto; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
+        /* Alert Badge */
+        .alert-badge { background: #dc3545; color: white; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+
         .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Mobile Header with Hamburger */
+        /* Mobile Header */
         .mobile-header { display: none; background: #fff; padding: 15px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-items: center; justify-content: space-between; z-index: 10; }
         .hamburger-btn { background: none; border: none; font-size: 24px; color: #333; cursor: pointer; }
         
-        .content-scroll { padding: 35px; overflow-y: auto; flex: 1; }
+        .content-scroll { padding: 30px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
         .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .mobile-header { display: flex; }
-            .sidebar { position: fixed; left: -260px; height: 100vh; }
-            .sidebar.open { left: 0; }
-            .sidebar-overlay.open { display: block; }
-            #login-screen { padding-left: 0; justify-content: center; }
-            .login-box { margin: 20px; }
-            .form-row { flex-direction: column; gap: 10px; }
-            .metrics { flex-direction: column; }
-            .btn span { display: none; } /* hide text on small buttons */
-        }
-        
-        /* Cards & Tables */
-        .section-header { margin-bottom: 25px; }
-        .section-header h2 { margin: 0; font-size: 26px; }
-        .metrics { display: flex; gap: 20px; margin-bottom: 30px; }
-        .card { flex: 1; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #28a745; }
+        /* Cards & Metrics */
+        .section-header { margin-bottom: 20px; }
+        .section-header h2 { margin: 0; font-size: 24px; }
+        .metrics { display: flex; gap: 20px; margin-bottom: 25px; flex-wrap: wrap; }
+        .card { flex: 1; min-width: 250px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #28a745; }
         .card.blue { border-left-color: #007bff; }
         .card h3 { margin: 0 0 10px 0; color: #6c757d; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
         .card .value { font-size: 32px; font-weight: bold; color: #333; }
 
-        .table-container { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; overflow-x: auto;}
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        /* Responsive Tables for Mobile */
+        .table-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; color: #495057; font-weight: bold; border-bottom: 2px solid #dee2e6; }
-        
-        /* Daily Group Headers */
+        th { background-color: #f8f9fa; color: #495057; font-weight: bold; border-bottom: 2px solid #dee2e6; white-space: nowrap; }
         .day-header td { background-color: #e9ecef; font-weight: bold; color: #333; font-size: 16px; border-bottom: 2px solid #dee2e6; }
         
         /* Badges & Buttons */
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; white-space: nowrap; }
         .badge.active-status { background: #d4edda; color: #155724; }
         .badge.suspended-status { background: #f8d7da; color: #721c24; }
         
-        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; color: white; margin-right: 5px; }
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; color: white; margin-right: 5px; margin-bottom: 5px; }
         .btn-edit { background: #ffc107; color: #000; }
         .btn-suspend { background: #fd7e14; }
         .btn-activate { background: #28a745; }
@@ -97,12 +87,24 @@
         .btn-primary { background: #007bff; padding: 12px 20px;}
 
         /* Forms */
-        .form-row { display: flex; gap: 20px; margin-bottom: 15px; align-items: flex-end; }
-        .form-group { flex: 1; }
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-end; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 200px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
         .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; }
-        
-        .attendance-log { font-size: 12px; color: #6c757d; line-height: 1.4; }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+            .mobile-header { display: flex; }
+            .sidebar { position: fixed; left: -260px; height: 100vh; }
+            .sidebar.open { left: 0; }
+            .sidebar-overlay.open { display: block; }
+            #login-screen { padding-left: 0; justify-content: center; }
+            .login-box { margin: 20px; }
+            .content-scroll { padding: 15px; }
+            .card .value { font-size: 28px; }
+            .btn span { display: none; } /* Hide text on small buttons inside tables to save space */
+            .btn { padding: 10px; margin-right: 2px; }
+        }
     </style>
 </head>
 <body>
@@ -125,14 +127,22 @@
 
         <div class="sidebar" id="sidebar">
             <h2>Mafra Lodge</h2>
+            
             <div class="nav-item active" onclick="switchTab('dashboard')" id="nav-dashboard">
-                <i class="fa-solid fa-chart-line"></i> Sales & Profits
+                <div class="nav-content"><i class="fa-solid fa-chart-line"></i> Sales & Profits</div>
             </div>
+            
             <div class="nav-item" onclick="switchTab('inventory')" id="nav-inventory">
-                <i class="fa-solid fa-boxes-stacked"></i> Inventory Tracking
+                <div class="nav-content"><i class="fa-solid fa-boxes-stacked"></i> Inventory Tracking</div>
             </div>
+            
+            <div class="nav-item" onclick="switchTab('alerts')" id="nav-alerts">
+                <div class="nav-content"><i class="fa-solid fa-bell"></i> Stock Alerts</div>
+                <span class="alert-badge" id="alert-count">0</span>
+            </div>
+            
             <div class="nav-item" onclick="switchTab('staff')" id="nav-staff">
-                <i class="fa-solid fa-users"></i> Staff & Attendance
+                <div class="nav-content"><i class="fa-solid fa-users"></i> Staff & Attendance</div>
             </div>
             
             <div style="flex-grow: 1;"></div>
@@ -176,8 +186,7 @@
                                     <th>Total (KES)</th>
                                 </tr>
                             </thead>
-                            <tbody id="orders-tbody">
-                                </tbody>
+                            <tbody id="orders-tbody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -195,6 +204,27 @@
                                 </tr>
                             </thead>
                             <tbody id="inventory-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="section-alerts" class="section">
+                    <div class="section-header">
+                        <h2>Restock Audit Logs</h2>
+                        <p style="color: #6c757d; margin-top: 5px;">Monitor exactly who added stock to the system and when, to prevent fraudulent entries.</p>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Item Restocked</th>
+                                    <th>Quantity Added</th>
+                                    <th>Added By (Cashier)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alerts-tbody">
+                                </tbody>
                         </table>
                     </div>
                 </div>
@@ -250,13 +280,13 @@
     </div>
 
     <script>
-        // --- MOBILE MENU LOGIC ---
+        const API_URL = "http://213.199.41.83:5000";
+
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('sidebar-overlay').classList.toggle('open');
         }
 
-        // --- PERSISTENT LOGIN ---
         document.addEventListener("DOMContentLoaded", () => {
             if(localStorage.getItem('admin_logged_in') === 'true') {
                 document.getElementById('login-screen').style.display = 'none';
@@ -269,7 +299,7 @@
             const username = document.getElementById('username').value;
             const pin = document.getElementById('pin').value;
             try {
-                const response = await fetch('http://213.199.41.83:5000/api/login', {
+                const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, pin, attemptedRole: 'admin' }) 
                 });
@@ -294,7 +324,6 @@
             document.getElementById(`section-${tabName}`).classList.add('active');
             document.getElementById(`nav-${tabName}`).classList.add('active');
             
-            // Auto-close sidebar on mobile after clicking a tab
             document.getElementById('sidebar').classList.remove('open');
             document.getElementById('sidebar-overlay').classList.remove('open');
         }
@@ -303,17 +332,17 @@
             fetchOrders();
             fetchInventory();
             fetchStaffAndAttendance();
+            fetchAlerts(); // Load new alerts tab
         }
 
-        // --- 4. DAILY SALES & PROFIT DATA ---
+        // --- DASHBOARD DATA ---
         async function fetchOrders() {
             try {
-                const response = await fetch('http://213.199.41.83:5000/api/orders');
+                const response = await fetch(`${API_URL}/api/orders`);
                 const data = await response.json();
                 if (data.success) {
                     const tbody = document.getElementById('orders-tbody');
                     tbody.innerHTML = '';
-                    
                     let totalRevenue = 0;
                     document.getElementById('metric-orders').innerText = data.orders.length;
 
@@ -322,18 +351,13 @@
                         return;
                     }
 
-                    // Group orders by Day
                     const groupedOrders = {};
-                    
                     data.orders.forEach(order => {
                         totalRevenue += order.total_amount;
-                        
-                        // Extract just the Day (e.g. "Monday, May 13, 2026")
                         const dateObj = new Date(order.createdAt);
                         const dayString = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
                         
                         if(!groupedOrders[dayString]) groupedOrders[dayString] = { total: 0, orders: [] };
-                        
                         groupedOrders[dayString].total += order.total_amount;
                         groupedOrders[dayString].orders.push({
                             id: order._id.substring(0, 8).toUpperCase(),
@@ -345,9 +369,7 @@
 
                     document.getElementById('metric-revenue').innerText = totalRevenue.toLocaleString('en-KE', { minimumFractionDigits: 2 });
 
-                    // Render Grouped Tables
                     for (const [day, dayData] of Object.entries(groupedOrders)) {
-                        // Create Day Header Row
                         const headerTr = document.createElement('tr');
                         headerTr.className = 'day-header';
                         headerTr.innerHTML = `
@@ -356,13 +378,12 @@
                         `;
                         tbody.appendChild(headerTr);
 
-                        // Create Rows for that day's orders
                         dayData.orders.forEach(o => {
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
                                 <td>${o.id}</td>
                                 <td><i class="fa-regular fa-clock" style="color:#adb5bd;"></i> ${o.time}</td>
-                                <td style="color:#555;">${o.items}</td>
+                                <td style="color:#555; white-space: normal; min-width: 200px;">${o.items}</td>
                                 <td><strong>KES ${o.amount.toFixed(2)}</strong></td>
                             `;
                             tbody.appendChild(tr);
@@ -372,10 +393,10 @@
             } catch (error) { console.error(error); }
         }
 
-        // --- 5. INVENTORY DATA ---
+        // --- INVENTORY DATA ---
         async function fetchInventory() {
             try {
-                const response = await fetch('http://213.199.41.83:5000/api/products');
+                const response = await fetch(`${API_URL}/api/products`);
                 const data = await response.json();
                 if (data.success) {
                     const tbody = document.getElementById('inventory-tbody');
@@ -396,12 +417,46 @@
             } catch (error) { console.error(error); }
         }
 
-        // --- 6. STAFF & ATTENDANCE DATA ---
+        // --- 👉 NEW: FETCH STOCK ALERTS ---
+        async function fetchAlerts() {
+            try {
+                const response = await fetch(`${API_URL}/api/stock-logs`);
+                const data = await response.json();
+                if (data.success) {
+                    const tbody = document.getElementById('alerts-tbody');
+                    tbody.innerHTML = '';
+                    
+                    document.getElementById('alert-count').innerText = data.logs.length;
+
+                    if (data.logs.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888;">No stock updates recorded yet.</td></tr>';
+                        return;
+                    }
+
+                    // Reverse logs to show newest first
+                    data.logs.reverse().forEach(log => {
+                        const dateObj = new Date(log.createdAt);
+                        const timeStr = dateObj.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><i class="fa-regular fa-clock" style="color:#adb5bd;"></i> ${timeStr}</td>
+                            <td><strong>${log.item_name}</strong></td>
+                            <td style="color: #28a745; font-weight: 800; font-size: 16px;">+${log.qty_added}</td>
+                            <td style="text-transform: uppercase;"><i class="fa-solid fa-user-check" style="color:#007bff;"></i> ${log.cashier_name}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        // --- STAFF & ATTENDANCE DATA ---
         async function fetchStaffAndAttendance() {
             try {
                 const [staffRes, attRes] = await Promise.all([
-                    fetch('http://213.199.41.83:5000/api/staff'),
-                    fetch('http://213.199.41.83:5000/api/attendance')
+                    fetch(`${API_URL}/api/staff`),
+                    fetch(`${API_URL}/api/attendance`)
                 ]);
                 
                 const staffData = await staffRes.json();
@@ -412,70 +467,57 @@
                     tbody.innerHTML = '';
                     
                     staffData.staff.forEach(user => {
-                        // Find this user's most recent attendance record
                         const userLogs = attData.records ? attData.records.filter(r => r.user_id === String(user._id)) : [];
-                        let attHtml = '<span style="color:#888; font-style:italic;">No records found</span>';
+                        let attHtml = '<span style="color:#888; font-style:italic;">No records</span>';
                         
                         if (userLogs.length > 0) {
                             const latest = userLogs[0];
                             const clockIn = new Date(latest.clock_in).toLocaleString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
                             const clockOut = latest.clock_out ? new Date(latest.clock_out).toLocaleString('en-US', {hour:'2-digit', minute:'2-digit'}) : '<strong style="color:#28a745;">Working Now</strong>';
-                            attHtml = `<div class="attendance-log"><strong>IN:</strong> ${clockIn}<br><strong>OUT:</strong> ${clockOut}</div>`;
+                            attHtml = `<div style="font-size:12px; line-height:1.4;"><strong>IN:</strong> ${clockIn}<br><strong>OUT:</strong> ${clockOut}</div>`;
                         }
 
-                        // Determine Status Badge & Button
-                        const isActive = user.isActive !== false; // defaults to true
-                        const statusBadge = isActive ? '<span class="badge active-status">Active</span>' : '<span class="badge suspended-status">On Leave / Suspended</span>';
+                        const isActive = user.isActive !== false;
+                        const statusBadge = isActive ? '<span class="badge active-status">Active</span>' : '<span class="badge suspended-status">Suspended</span>';
                         const toggleBtn = isActive 
-                            ? `<button class="btn btn-suspend" onclick="toggleStaffStatus('${user._id}', false)" title="Suspend Account"><i class="fa-solid fa-ban"></i> <span>Suspend</span></button>`
-                            : `<button class="btn btn-activate" onclick="toggleStaffStatus('${user._id}', true)" title="Activate Account"><i class="fa-solid fa-check"></i> <span>Activate</span></button>`;
+                            ? `<button class="btn btn-suspend" onclick="toggleStaffStatus('${user._id}', false)"><i class="fa-solid fa-ban"></i> <span>Suspend</span></button>`
+                            : `<button class="btn btn-activate" onclick="toggleStaffStatus('${user._id}', true)"><i class="fa-solid fa-check"></i> <span>Activate</span></button>`;
 
-                        // Inside fetchStaffAndAttendance, where you create the table rows:
-const tr = document.createElement('tr');
-tr.innerHTML = `
-    <td>
-        <strong style="font-size:16px;">${user.username}</strong><br>
-        <span style="color:#6c757d; font-size:12px; text-transform:uppercase;">${user.role}</span>
-    </td>
-    <td>${statusBadge}</td>
-    <td>${attHtml}</td>
-    <td>
-        <button class="btn btn-edit" onclick="editUsername('${user._id}', '${user.username}')">
-            <i class="fa-solid fa-pen"></i> <span>Edit Name</span>
-        </button>
-        ${toggleBtn}
-        <button class="btn btn-edit" onclick="changePassword('${user._id}', '${user.username}')">
-            <i class="fa-solid fa-key"></i>
-        </button>
-        <button class="btn btn-delete" onclick="deleteStaff('${user._id}', '${user.username}')">
-            <i class="fa-solid fa-trash"></i>
-        </button>
-    </td>
-`;
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>
+                                <strong style="font-size:16px;">${user.username}</strong><br>
+                                <span style="color:#6c757d; font-size:12px; text-transform:uppercase;">${user.role}</span>
+                            </td>
+                            <td>${statusBadge}</td>
+                            <td>${attHtml}</td>
+                            <td style="white-space: nowrap;">
+                                <button class="btn btn-edit" onclick="editUsername('${user._id}', '${user.username}')"><i class="fa-solid fa-pen"></i> <span>Edit</span></button>
+                                ${toggleBtn}
+                                <button class="btn btn-edit" onclick="changePassword('${user._id}', '${user.username}')"><i class="fa-solid fa-key"></i></button>
+                                <button class="btn btn-delete" onclick="deleteStaff('${user._id}', '${user.username}')"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        `;
                         tbody.appendChild(tr);
                     });
                 }
             } catch (error) { console.error(error); }
         }
 
-        // --- STAFF ACTIONS ---
         async function addStaff() {
             const name = document.getElementById('new-staff-name').value;
             const role = document.getElementById('new-staff-role').value;
             const pin = document.getElementById('new-staff-pin').value;
             if(!name || !pin) return alert("Please fill in both Username and Password.");
-
             try {
-                const response = await fetch('http://213.199.41.83:5000/api/staff', {
+                const response = await fetch(`${API_URL}/api/staff`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: name, role: role, pin: pin }) 
                 });
                 const data = await response.json();
                 if (data.success) {
-                    document.getElementById('new-staff-name').value = '';
-                    document.getElementById('new-staff-pin').value = '';
+                    document.getElementById('new-staff-name').value = ''; document.getElementById('new-staff-pin').value = '';
                     fetchStaffAndAttendance(); 
-                    alert("Account created successfully!");
                 } else alert("Error: " + data.message);
             } catch (error) { console.error(error); }
         }
@@ -483,55 +525,40 @@ tr.innerHTML = `
         async function editUsername(userId, oldName) {
             const newName = prompt(`Enter new username for ${oldName}:`, oldName);
             if (!newName || newName === oldName) return; 
-
             try {
-                const response = await fetch(`http://213.199.41.83:5000/api/staff/${userId}/edit`, {
-                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: newName })
+                const response = await fetch(`${API_URL}/api/staff/${userId}/edit`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: newName })
                 });
-                const data = await response.json();
-                if (data.success) fetchStaffAndAttendance();
-                else alert("Failed to update: " + data.message);
+                if ((await response.json()).success) fetchStaffAndAttendance();
             } catch (error) { console.error(error); }
         }
 
         async function toggleStaffStatus(userId, makeActive) {
-            const actionText = makeActive ? "activate" : "suspend / put on leave";
-            if (!confirm(`Are you sure you want to ${actionText} this account?`)) return;
-
+            if (!confirm(`Are you sure you want to ${makeActive ? "activate" : "suspend"} this account?`)) return;
             try {
-                const response = await fetch(`http://213.199.41.83:5000/api/staff/${userId}/edit`, {
-                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ isActive: makeActive })
+                const response = await fetch(`${API_URL}/api/staff/${userId}/edit`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: makeActive })
                 });
-                const data = await response.json();
-                if (data.success) fetchStaffAndAttendance();
-                else alert("Failed to update status: " + data.message);
+                if ((await response.json()).success) fetchStaffAndAttendance();
             } catch (error) { console.error(error); }
         }
 
         async function changePassword(userId, username) {
             const newPassword = prompt(`Enter new password for ${username}:`);
             if (!newPassword) return; 
-
             try {
-                const response = await fetch(`http://213.199.41.83:5000/api/staff/${userId}/password`, {
-                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ newPin: newPassword })
+                const response = await fetch(`${API_URL}/api/staff/${userId}/password`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPin: newPassword })
                 });
-                const data = await response.json();
-                if (data.success) alert(`Password updated successfully!`);
-                else alert("Failed to update: " + data.message);
+                if ((await response.json()).success) alert(`Password updated!`);
             } catch (error) { console.error(error); }
         }
 
         async function deleteStaff(userId, username) {
-            if (!confirm(`Are you sure you want to completely delete ${username}? This cannot be undone.`)) return;
+            if (!confirm(`Delete ${username} completely? This cannot be undone.`)) return;
             try {
-                const response = await fetch(`http://213.199.41.83:5000/api/staff/${userId}`, { method: 'DELETE' });
-                const data = await response.json();
-                if (data.success) fetchStaffAndAttendance(); 
-                else alert("Failed to delete: " + data.message);
+                const response = await fetch(`${API_URL}/api/staff/${userId}`, { method: 'DELETE' });
+                if ((await response.json()).success) fetchStaffAndAttendance(); 
             } catch (error) { console.error(error); }
         }
     </script>

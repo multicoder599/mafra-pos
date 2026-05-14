@@ -14,6 +14,23 @@
         * { box-sizing: border-box; font-family: 'Cause', sans-serif; }
         body { margin: 0; background-color: #f4f6f9; color: #333; overflow-x: hidden; }
         
+        /* --- CUSTOM MODAL --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3); animation: scaleUp 0.3s ease; }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-box h3 { margin-top: 0; font-size: 22px; color: #333; margin-bottom: 10px; }
+        .modal-box p { color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.5; }
+        .modal-btn { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; transition: 0.2s; }
+        .modal-btn:hover { filter: brightness(1.1); }
+        .modal-btn.success { background: #28a745; }
+        .modal-btn.error { background: #dc3545; }
+        .modal-btn.warning { background: #ffc107; color: #000; }
+        .modal-icon { font-size: 45px; margin-bottom: 15px; }
+        .modal-icon.success { color: #28a745; }
+        .modal-icon.error { color: #dc3545; }
+        .modal-icon.warning { color: #ffc107; }
+
+        /* --- LOGIN SCREEN --- */
         #login-screen { display: flex; height: 100vh; width: 100vw; background-image: url('background.png'); background-size: cover; background-position: center; position: relative; align-items: center; justify-content: flex-start; padding-left: 8%; }
         #login-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1; }
         .login-box { position: relative; z-index: 2; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 45px 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 100%; max-width: 400px; }
@@ -23,6 +40,7 @@
         .login-box input { width: 100%; padding: 15px; margin-bottom: 25px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; }
         .login-box button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
 
+        /* --- DASHBOARD LAYOUT & MOBILE MENU --- */
         #admin-screen { display: none; min-height: 100vh; flex-direction: row; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
         .sidebar { width: 260px; background: #343a40; color: white; padding: 20px; display: flex; flex-direction: column; transition: 0.3s ease; z-index: 1000; }
@@ -73,6 +91,7 @@
         .btn-suspend { background: #fd7e14; }
         .btn-activate { background: #28a745; }
         .btn-delete { background: #dc3545; }
+        .btn-save { background: #17a2b8; }
         .btn-primary { background: #007bff; padding: 12px 20px;}
 
         .form-row { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-end; flex-wrap: wrap; }
@@ -96,6 +115,15 @@
     </style>
 </head>
 <body>
+
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modal-icon" class="modal-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 id="modal-title">Notice</h3>
+            <p id="modal-message">Message goes here.</p>
+            <button id="modal-close-btn" class="modal-btn warning" onclick="closeModal()">OK</button>
+        </div>
+    </div>
 
     <div id="login-screen">
         <div class="login-box">
@@ -121,7 +149,7 @@
                 <div class="nav-content"><i class="fa-solid fa-receipt"></i> Business Expenses</div>
             </div>
             <div class="nav-item" onclick="switchTab('inventory')" id="nav-inventory">
-                <div class="nav-content"><i class="fa-solid fa-boxes-stacked"></i> Inventory & Prices</div>
+                <div class="nav-content"><i class="fa-solid fa-boxes-stacked"></i> Price Management</div>
             </div>
             <div class="nav-item" onclick="switchTab('alerts')" id="nav-alerts">
                 <div class="nav-content"><i class="fa-solid fa-bell"></i> Stock Alerts</div>
@@ -213,42 +241,21 @@
                 </div>
 
                 <div id="section-inventory" class="section">
-                    <div class="section-header"><h2>Inventory Tracking & Prices</h2></div>
-                    <div class="table-container" style="background: #f8f9fa; border: 1px solid #dee2e6;">
-                        <h2 style="margin-top:0;"><i class="fa-solid fa-plus-circle"></i> Add New Product</h2>
-                        <div class="form-row">
-                            <div class="form-group"><label>Name</label><input type="text" id="new-prod-name" placeholder="e.g. Tusker"></div>
-                            <div class="form-group">
-                                <label>Category</label>
-                                <select id="new-prod-type">
-                                    <option value="wine">Wine</option>
-                                    <option value="room booking">Room Booking</option>
-                                    <option value="food">Food</option>
-                                    <option value="beer">Beer</option>
-                                    <option value="soft drink">Soft Drink</option>
-                                    <option value="whiskey">Whiskey</option>
-                                    <option value="vodka">Vodka</option>
-                                    <option value="brandy">Brandy</option>
-                                    <option value="liquor/cream">Liquor/Cream</option>
-                                    <option value="spirit">Spirit</option>
-                                    <option value="gins">Gins</option>
-                                    <option value="cigarettes">Cigarettes</option>
-                                    <option value="tokens">Tokens</option>
-                                    <option value="others">Others</option>
-                                </select>
-                            </div>
-                            <div class="form-group"><label>Buying Price (KES)</label><input type="number" id="new-prod-buy" placeholder="0.00"></div>
-                            <div class="form-group"><label>Selling Price (KES)</label><input type="number" id="new-prod-sell" placeholder="0.00"></div>
-                            <div class="form-group"><label>Initial Stock</label><input type="number" id="new-prod-stock" placeholder="0"></div>
-                            <button class="btn btn-primary" style="height: 40px; margin-bottom: 3px;" onclick="createNewProduct()">Save</button>
-                        </div>
+                    <div class="section-header">
+                        <h2>Price Management</h2>
+                        <p style="color: #888; font-size: 14px; margin-top: 5px;">Edit the buying or selling price of any item entered by the cashiers and click Save.</p>
                     </div>
+                    
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Item Name</th><th>Category</th><th>Current Stock</th>
-                                    <th>Buying Price</th><th>Selling Price</th><th>Add Stock</th><th>Actions</th>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Buying Price (KES)</th>
+                                    <th>Selling Price (KES)</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="inventory-tbody"></tbody>
@@ -302,6 +309,22 @@
         let masterExpensesData = {}; 
         let availableDays = []; 
 
+        function showModal(title, message, type = 'warning') {
+            const modal = document.getElementById('custom-modal');
+            const icon = document.getElementById('modal-icon');
+            const btn = document.getElementById('modal-close-btn');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            icon.className = `modal-icon ${type}`;
+            btn.className = `modal-btn ${type}`;
+            if(type === 'success') icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            else if(type === 'error') icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+            else icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('custom-modal').style.display = 'none'; }
+
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('sidebar-overlay').classList.toggle('open');
@@ -329,8 +352,8 @@
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('admin-screen').style.display = 'flex'; 
                     loadAllData();
-                } else alert(data.message);
-            } catch (error) { alert("Could not connect to server."); }
+                } else showModal("Login Failed", data.message, "error");
+            } catch (error) { showModal("Connection Error", "Could not connect to server.", "error"); }
         }
 
         function logout() {
@@ -366,23 +389,19 @@
                     tbody.innerHTML = '';
                     masterExpensesData = {}; 
 
-                    // Group all expenses by date string
                     const grouped = {};
                     data.expenses.forEach(exp => {
                         const dateObj = new Date(exp.date);
                         const dayString = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
                         
-                        // For the P&L math later
                         if(!masterExpensesData[dayString]) masterExpensesData[dayString] = [];
                         masterExpensesData[dayString].push(exp);
 
-                        // For the grouped table UI
                         if(!grouped[dayString]) grouped[dayString] = { total: 0, items: [], rawDate: dateObj };
                         grouped[dayString].items.push(exp);
                         grouped[dayString].total += exp.amount;
                     });
 
-                    // Sort the days by newest first, and slice to ONLY keep the last 7 days
                     const top7Days = Object.keys(grouped)
                         .sort((a, b) => grouped[b].rawDate - grouped[a].rawDate)
                         .slice(0, 7);
@@ -392,11 +411,9 @@
                         return;
                     }
 
-                    // Render the 7 days with headers
                     top7Days.forEach(day => {
                         const dayData = grouped[day];
                         
-                        // Render Day Header
                         const headerTr = document.createElement('tr');
                         headerTr.className = 'day-header';
                         headerTr.innerHTML = `
@@ -405,7 +422,6 @@
                         `;
                         tbody.appendChild(headerTr);
 
-                        // Render items for that day
                         dayData.items.forEach(exp => {
                             const timeStr = new Date(exp.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                             const tr = document.createElement('tr');
@@ -425,7 +441,7 @@
         async function addExpense() {
             const desc = document.getElementById('new-expense-desc').value;
             const amount = document.getElementById('new-expense-amount').value;
-            if(!desc || !amount) return alert("Please provide a description and amount.");
+            if(!desc || !amount) return showModal("Missing Info", "Please provide a description and amount.", "warning");
             try {
                 const response = await fetch(`${API_URL}/api/expenditures`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -439,6 +455,7 @@
             } catch(e) { console.error(e); }
         }
 
+        // --- DASHBOARD MATH & ORDERS ---
         async function fetchOrdersAndCalculate() {
             try {
                 const response = await fetch(`${API_URL}/api/orders`);
@@ -538,7 +555,7 @@
             document.getElementById('metric-profit').innerText = dailyNetProfit.toLocaleString('en-KE', { minimumFractionDigits: 2 });
         }
 
-
+        // --- INVENTORY / PRICING ---
         async function fetchInventory() {
             try {
                 const response = await fetch(`${API_URL}/api/products`);
@@ -554,7 +571,6 @@
                         const stockLvl = product.stock || 0;
                         const stockColor = stockLvl < 10 ? 'color: #dc3545;' : 'color: #28a745;';
                         const safeName = product.name.replace(/'/g, "\\'");
-                        
                         const buyPrice = product.buying_price || 0;
 
                         const tr = document.createElement('tr');
@@ -562,11 +578,10 @@
                             <td><strong>${product.name}</strong></td>
                             <td style="text-transform: capitalize;">${product.type}</td>
                             <td style="font-weight: bold; font-size: 18px; ${stockColor}">${stockLvl}</td>
-                            <td><input type="number" id="buy-${product._id}" style="width:80px; padding:6px; border:1px solid #ccc;" value="${buyPrice}"></td>
-                            <td><input type="number" id="sell-${product._id}" style="width:80px; padding:6px; border:1px solid #ccc;" value="${product.price}"></td>
-                            <td><input type="number" id="add-${product._id}" style="width:80px; padding:6px; border:1px solid #ccc;" placeholder="0"></td>
+                            <td><input type="number" id="buy-${product._id}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;" value="${buyPrice}"></td>
+                            <td><input type="number" id="sell-${product._id}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;" value="${product.price}"></td>
                             <td style="white-space:nowrap;">
-                                <button class="btn btn-save" onclick="updateProduct('${product._id}')"><i class="fa-solid fa-floppy-disk"></i></button>
+                                <button class="btn btn-save" onclick="updateProduct('${product._id}')"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                                 <button class="btn btn-delete" onclick="deleteProduct('${product._id}', '${safeName}')"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         `;
@@ -576,41 +591,20 @@
             } catch (error) { console.error(error); }
         }
 
-        async function createNewProduct() {
-            const name = document.getElementById('new-prod-name').value;
-            const type = document.getElementById('new-prod-type').value;
-            const buyPrice = document.getElementById('new-prod-buy').value;
-            const sellPrice = document.getElementById('new-prod-sell').value;
-            const stock = document.getElementById('new-prod-stock').value;
-            
-            if(!name || !sellPrice) return alert("Name and Selling Price required.");
-            
-            try {
-                const res = await fetch(`${API_URL}/api/products`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, type, price: sellPrice, buying_price: buyPrice, stock })
-                });
-                if((await res.json()).success) {
-                    document.getElementById('new-prod-name').value = ''; document.getElementById('new-prod-buy').value = '';
-                    document.getElementById('new-prod-sell').value = ''; document.getElementById('new-prod-stock').value = '';
-                    loadAllData(); 
-                }
-            } catch(e) { console.error(e); }
-        }
-
         async function updateProduct(id) {
             const buyPrice = document.getElementById(`buy-${id}`).value;
             const sellPrice = document.getElementById(`sell-${id}`).value;
-            const addedStock = document.getElementById(`add-${id}`).value;
             
             try {
                 const res = await fetch(`${API_URL}/api/products/${id}`, {
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ price: sellPrice, buying_price: buyPrice, addedStock: addedStock, cashierName: 'Admin' })
+                    body: JSON.stringify({ price: sellPrice, buying_price: buyPrice, cashierName: 'Admin' })
                 });
                 if((await res.json()).success) {
-                    // Flash a brief alert or just refresh data so they know it saved
+                    showModal("Success", "Prices updated successfully!", "success");
                     loadAllData(); 
+                } else {
+                    showModal("Error", "Failed to update prices.", "error");
                 }
             } catch(e) { console.error(e); }
         }
@@ -623,7 +617,7 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- 👉 UPDATED: STOCK ALERTS (WITH DELETE) ---
+        // --- STOCK ALERTS (WITH DELETE) ---
         async function fetchAlerts() {
             try {
                 const response = await fetch(`${API_URL}/api/stock-logs`);
@@ -650,13 +644,14 @@
         }
 
         async function deleteStockAlert(id) {
-            if(!confirm("Clear this alert?")) return;
+            if(!confirm("Clear this alert from the log?")) return;
             try {
                 const res = await fetch(`${API_URL}/api/stock-logs/${id}`, { method: 'DELETE' });
                 if((await res.json()).success) fetchAlerts();
             } catch(e) { console.error(e); }
         }
 
+        // --- STAFF MANAGEMENT ---
         async function fetchStaffAndAttendance() {
             try {
                 const [staffRes, attRes] = await Promise.all([fetch(`${API_URL}/api/staff`), fetch(`${API_URL}/api/attendance`)]);
@@ -687,7 +682,7 @@
             const name = document.getElementById('new-staff-name').value;
             const role = document.getElementById('new-staff-role').value;
             const pin = document.getElementById('new-staff-pin').value;
-            if(!name || !pin) return alert("Please fill in both Username and Password.");
+            if(!name || !pin) return showModal("Missing Info", "Please fill in both Username and Password.", "warning");
             try {
                 const response = await fetch(`${API_URL}/api/staff`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -697,7 +692,8 @@
                 if (data.success) {
                     document.getElementById('new-staff-name').value = ''; document.getElementById('new-staff-pin').value = '';
                     fetchStaffAndAttendance(); 
-                } else alert("Error: " + data.message);
+                    showModal("Success", "Staff added successfully!", "success");
+                } else showModal("Error", data.message, "error");
             } catch (error) { console.error(error); }
         }
 

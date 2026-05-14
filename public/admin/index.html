@@ -14,6 +14,7 @@
         * { box-sizing: border-box; font-family: 'Cause', sans-serif; }
         body { margin: 0; background-color: #f4f6f9; color: #333; overflow-x: hidden; }
         
+        /* --- LOGIN SCREEN --- */
         #login-screen { display: flex; height: 100vh; width: 100vw; background-image: url('background.png'); background-size: cover; background-position: center; position: relative; align-items: center; justify-content: flex-start; padding-left: 8%; }
         #login-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1; }
         .login-box { position: relative; z-index: 2; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 45px 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 100%; max-width: 400px; }
@@ -23,6 +24,7 @@
         .login-box input { width: 100%; padding: 15px; margin-bottom: 25px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; }
         .login-box button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
 
+        /* --- DASHBOARD LAYOUT & MOBILE MENU --- */
         #admin-screen { display: none; min-height: 100vh; flex-direction: row; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
         .sidebar { width: 260px; background: #343a40; color: white; padding: 20px; display: flex; flex-direction: column; transition: 0.3s ease; z-index: 1000; }
@@ -146,8 +148,7 @@
                         <p style="color: #888; font-size: 14px; margin-top: 5px;">Select a day to view its complete financial breakdown.</p>
                     </div>
                     
-                    <div class="day-tabs" id="day-tabs-container">
-                        </div>
+                    <div class="day-tabs" id="day-tabs-container"></div>
 
                     <div class="metrics">
                         <div class="card blue">
@@ -215,10 +216,24 @@
                         <h2 style="margin-top:0;"><i class="fa-solid fa-plus-circle"></i> Add New Product</h2>
                         <div class="form-row">
                             <div class="form-group"><label>Name</label><input type="text" id="new-prod-name" placeholder="e.g. Tusker"></div>
+                            
                             <div class="form-group">
                                 <label>Category</label>
                                 <select id="new-prod-type">
-                                    <option value="drinks">Drinks</option><option value="food">Food</option><option value="wines">Wines & Spirits</option><option value="rooms">Rooms</option>
+                                    <option value="wine">Wine</option>
+                                    <option value="room booking">Room Booking</option>
+                                    <option value="food">Food</option>
+                                    <option value="beer">Beer</option>
+                                    <option value="soft drink">Soft Drink</option>
+                                    <option value="whiskey">Whiskey</option>
+                                    <option value="vodka">Vodka</option>
+                                    <option value="brandy">Brandy</option>
+                                    <option value="liquor/cream">Liquor/Cream</option>
+                                    <option value="spirit">Spirit</option>
+                                    <option value="gins">Gins</option>
+                                    <option value="cigarettes">Cigarettes</option>
+                                    <option value="tokens">Tokens</option>
+                                    <option value="others">Others</option>
                                 </select>
                             </div>
                             <div class="form-group"><label>Buying Price (KES)</label><input type="number" id="new-prod-buy" placeholder="0.00"></div>
@@ -281,10 +296,10 @@
     <script>
         const API_URL = "https://api.mafralodge.online";
 
-        let allProductsMap = {}; // Fast lookup for profit math
-        let masterOrdersData = {}; // Groups orders by Day
-        let masterExpensesData = {}; // Groups expenses by Day
-        let availableDays = []; // List of days we have data for
+        let allProductsMap = {}; 
+        let masterOrdersData = {}; 
+        let masterExpensesData = {}; 
+        let availableDays = []; 
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
@@ -333,7 +348,6 @@
         }
 
         async function loadAllData() {
-            // Must fetch inventory first to get buying prices for profit calculation
             await fetchInventory(); 
             await fetchExpenses();
             await fetchOrdersAndCalculate();
@@ -341,7 +355,6 @@
             fetchAlerts(); 
         }
 
-        // --- EXPENDITURES DATA ---
         async function fetchExpenses() {
             try {
                 const response = await fetch(`${API_URL}/api/expenditures`);
@@ -349,17 +362,15 @@
                 if (data.success) {
                     const tbody = document.getElementById('expenses-tbody');
                     tbody.innerHTML = '';
-                    masterExpensesData = {}; // Reset
+                    masterExpensesData = {}; 
 
                     data.expenses.forEach(exp => {
-                        // Group by Date String
                         const dateObj = new Date(exp.date);
                         const dayString = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
                         
                         if(!masterExpensesData[dayString]) masterExpensesData[dayString] = [];
                         masterExpensesData[dayString].push(exp);
 
-                        // Render Global Table
                         const timeStr = dateObj.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
@@ -386,12 +397,11 @@
                 if((await response.json()).success) {
                     document.getElementById('new-expense-desc').value = '';
                     document.getElementById('new-expense-amount').value = '';
-                    loadAllData(); // Reload to update math
+                    loadAllData(); 
                 }
             } catch(e) { console.error(e); }
         }
 
-        // --- DASHBOARD P&L MATH & DAY TABS ---
         async function fetchOrdersAndCalculate() {
             try {
                 const response = await fetch(`${API_URL}/api/orders`);
@@ -411,7 +421,6 @@
                         masterOrdersData[dayString].push(order);
                     });
 
-                    // Render Day Tabs
                     const tabsContainer = document.getElementById('day-tabs-container');
                     tabsContainer.innerHTML = '';
                     
@@ -428,29 +437,24 @@
                         tabsContainer.appendChild(btn);
                     });
 
-                    // Auto-select the most recent day
                     selectDay(availableDays[0], tabsContainer.firstChild);
                 }
             } catch (error) { console.error(error); }
         }
 
         function selectDay(dayString, clickedBtn) {
-            // Update Active Tab Styling
             document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
             if(clickedBtn) clickedBtn.classList.add('active');
             
             document.getElementById('table-date-title').innerText = dayString;
 
-            // Math Variables
             let dailyRevenue = 0;
-            let dailyCOGS = 0; // Cost of Goods Sold (Total Buying Price)
+            let dailyCOGS = 0; 
             let dailyExpenses = 0;
             
-            // 1. Calculate Expenses for this day
             const expensesForDay = masterExpensesData[dayString] || [];
             expensesForDay.forEach(exp => dailyExpenses += exp.amount);
 
-            // 2. Render Orders and calculate Profit
             const ordersForDay = masterOrdersData[dayString] || [];
             const tbody = document.getElementById('orders-tbody');
             tbody.innerHTML = '';
@@ -460,12 +464,10 @@
             } else {
                 ordersForDay.forEach(order => {
                     dailyRevenue += order.total_amount;
-                    
                     let orderBuyCost = 0;
                     let orderItemsHtml = [];
 
                     order.items.forEach(item => {
-                        // Find the buying price from our cached inventory map
                         const product = allProductsMap[item.product_id];
                         const buyPrice = product ? (product.buying_price || 0) : 0;
                         const totalBuyCostForItem = buyPrice * item.quantity;
@@ -491,7 +493,6 @@
                 });
             }
 
-            // 3. Update Dashboard Metric Cards
             const dailyNetProfit = dailyRevenue - (dailyCOGS + dailyExpenses);
             
             document.getElementById('metric-revenue').innerText = dailyRevenue.toLocaleString('en-KE', { minimumFractionDigits: 2 });
@@ -501,18 +502,17 @@
         }
 
 
-        // --- INVENTORY DATA & UPDATES ---
         async function fetchInventory() {
             try {
                 const response = await fetch(`${API_URL}/api/products`);
                 const data = await response.json();
                 if (data.success) {
-                    allProductsMap = {}; // Reset map
+                    allProductsMap = {}; 
                     const tbody = document.getElementById('inventory-tbody');
                     tbody.innerHTML = '';
                     
                     data.products.forEach(product => {
-                        allProductsMap[product._id] = product; // Save for profit math
+                        allProductsMap[product._id] = product; 
 
                         const stockLvl = product.stock || 0;
                         const stockColor = stockLvl < 10 ? 'color: #dc3545;' : 'color: #28a745;';
@@ -556,7 +556,7 @@
                 if((await res.json()).success) {
                     document.getElementById('new-prod-name').value = ''; document.getElementById('new-prod-buy').value = '';
                     document.getElementById('new-prod-sell').value = ''; document.getElementById('new-prod-stock').value = '';
-                    loadAllData(); // Refresh everything
+                    loadAllData(); 
                 }
             } catch(e) { console.error(e); }
         }
@@ -583,8 +583,6 @@
             } catch(e) { console.error(e); }
         }
 
-
-        // --- REMAINDER: STAFF & ALERTS ---
         async function fetchAlerts() {
             try {
                 const response = await fetch(`${API_URL}/api/stock-logs`);
@@ -629,11 +627,64 @@
             } catch (error) { console.error(error); }
         }
 
-        async function addStaff() { /* Same as before */ }
-        async function editUsername(userId, oldName) { /* Same as before */ }
-        async function toggleStaffStatus(userId, makeActive) { /* Same as before */ }
-        async function changePassword(userId, username) { /* Same as before */ }
-        async function deleteStaff(userId, username) { /* Same as before */ }
+        // 👉 RESTORED: Fully functioning Staff Action scripts
+        async function addStaff() {
+            const name = document.getElementById('new-staff-name').value;
+            const role = document.getElementById('new-staff-role').value;
+            const pin = document.getElementById('new-staff-pin').value;
+            if(!name || !pin) return alert("Please fill in both Username and Password.");
+            try {
+                const response = await fetch(`${API_URL}/api/staff`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: name, role: role, pin: pin }) 
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('new-staff-name').value = ''; document.getElementById('new-staff-pin').value = '';
+                    fetchStaffAndAttendance(); 
+                } else alert("Error: " + data.message);
+            } catch (error) { console.error(error); }
+        }
+
+        async function editUsername(userId, oldName) {
+            const newName = prompt(`Enter new username for ${oldName}:`, oldName);
+            if (!newName || newName === oldName) return; 
+            try {
+                const response = await fetch(`${API_URL}/api/staff/${userId}/edit`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: newName })
+                });
+                if ((await response.json()).success) fetchStaffAndAttendance();
+            } catch (error) { console.error(error); }
+        }
+
+        async function toggleStaffStatus(userId, makeActive) {
+            if (!confirm(`Are you sure you want to ${makeActive ? "activate" : "suspend"} this account?`)) return;
+            try {
+                const response = await fetch(`${API_URL}/api/staff/${userId}/edit`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: makeActive })
+                });
+                if ((await response.json()).success) fetchStaffAndAttendance();
+            } catch (error) { console.error(error); }
+        }
+
+        async function changePassword(userId, username) {
+            const newPassword = prompt(`Enter new password for ${username}:`);
+            if (!newPassword) return; 
+            try {
+                const response = await fetch(`${API_URL}/api/staff/${userId}/password`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPin: newPassword })
+                });
+                if ((await response.json()).success) alert(`Password updated!`);
+            } catch (error) { console.error(error); }
+        }
+
+        async function deleteStaff(userId, username) {
+            if (!confirm(`Delete ${username} completely? This cannot be undone.`)) return;
+            try {
+                const response = await fetch(`${API_URL}/api/staff/${userId}`, { method: 'DELETE' });
+                if ((await response.json()).success) fetchStaffAndAttendance(); 
+            } catch (error) { console.error(error); }
+        }
 
     </script>
 </body>

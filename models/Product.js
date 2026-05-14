@@ -9,6 +9,7 @@ const productSchema = new mongoose.Schema({
         enum: ['food', 'drinks', 'wines', 'rooms', 'eatery', 'drink'] 
     },
     price: { type: Number, required: true },
+    buying_price: { type: Number, default: 0 }, // 👉 ADD THIS LINE
     stock: { type: Number, default: 0 }
 }, { timestamps: true });
 

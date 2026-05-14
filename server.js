@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
-const mongoose = require('mongoose'); // 👉 NEW: Added mongoose here to define the schema directly
+const mongoose = require('mongoose'); 
 require('dotenv').config();
 
 // --- DATABASE MODELS ---
@@ -13,7 +13,7 @@ const Product = require('./models/Product');
 const Order = require('./models/Order');
 const Attendance = require('./models/Attendance'); 
 
-// 👉 NEW: Define the Anti-Cheat Stock Audit Log Schema right here
+// --- ANTI-CHEAT AUDIT LOG SCHEMA ---
 const StockLogSchema = new mongoose.Schema({
     item_name: String,
     qty_added: Number,
@@ -21,6 +21,15 @@ const StockLogSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 const StockLog = mongoose.model('StockLog', StockLogSchema);
+
+// 👉 NEW: EXPENDITURE (EXPENSE) SCHEMA
+const ExpenditureSchema = new mongoose.Schema({
+    description: String,
+    amount: Number,
+    added_by: String,
+    date: { type: Date, default: Date.now }
+});
+const Expenditure = mongoose.model('Expenditure', ExpenditureSchema);
 
 // 1. Connect to Database
 connectDB();
@@ -171,6 +180,33 @@ apiApp.post('/api/attendance', async (req, res) => {
 });
 
 // ------------------------------------------
+// 👉 NEW: EXPENDITURES (BUSINESS EXPENSES)
+// ------------------------------------------
+apiApp.get('/api/expenditures', async (req, res) => {
+    try {
+        const expenses = await Expenditure.find({}).sort({ date: -1 });
+        res.json({ success: true, expenses });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+apiApp.post('/api/expenditures', async (req, res) => {
+    try {
+        const { description, amount, added_by } = req.body;
+        const newExpense = await Expenditure.create({ 
+            description, 
+            amount: Number(amount), 
+            added_by: added_by || 'Admin' 
+        });
+        res.json({ success: true, expense: newExpense });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// ------------------------------------------
 // PRODUCTS, INVENTORY & AUDIT LOGS
 // ------------------------------------------
 apiApp.get('/api/products', async (req, res) => {
@@ -182,13 +218,15 @@ apiApp.get('/api/products', async (req, res) => {
     }
 });
 
+// 👉 UPDATED: Now accepts buying_price
 apiApp.post('/api/products', async (req, res) => {
     try {
-        const { name, type, price, stock } = req.body;
+        const { name, type, price, buying_price, stock } = req.body;
         const newProduct = await Product.create({
             name,
             type: type.toLowerCase(),
             price: Number(price),
+            buying_price: Number(buying_price) || 0,
             stock: Number(stock) || 0
         });
         res.json({ success: true, message: 'Product created!', product: newProduct });
@@ -198,15 +236,16 @@ apiApp.post('/api/products', async (req, res) => {
     }
 });
 
-// 👉 UPDATED: Now listens for addedStock and creates an audit log!
+// 👉 UPDATED: Now updates buying_price
 apiApp.patch('/api/products/:id', async (req, res) => {
     try {
-        const { price, addedStock, cashierName } = req.body; 
+        const { price, buying_price, addedStock, cashierName } = req.body; 
         const product = await Product.findById(req.params.id);
         
         if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
         if (price !== undefined && price !== '') product.price = Number(price);
+        if (buying_price !== undefined && buying_price !== '') product.buying_price = Number(buying_price);
         
         // If stock is added, update it AND write an audit log
         if (addedStock && Number(addedStock) > 0) {
@@ -236,7 +275,7 @@ apiApp.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-// 👉 NEW ROUTE: Fetch the anti-cheat logs for the Admin Panel
+// Fetch the anti-cheat logs for the Admin Panel
 apiApp.get('/api/stock-logs', async (req, res) => {
     try {
         const logs = await StockLog.find().sort({ createdAt: -1 }).limit(50);

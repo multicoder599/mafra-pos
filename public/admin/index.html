@@ -14,7 +14,6 @@
         * { box-sizing: border-box; font-family: 'Cause', sans-serif; }
         body { margin: 0; background-color: #f4f6f9; color: #333; overflow-x: hidden; }
         
-        /* --- LOGIN SCREEN --- */
         #login-screen { display: flex; height: 100vh; width: 100vw; background-image: url('background.png'); background-size: cover; background-position: center; position: relative; align-items: center; justify-content: flex-start; padding-left: 8%; }
         #login-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1; }
         .login-box { position: relative; z-index: 2; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 45px 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 100%; max-width: 400px; }
@@ -24,7 +23,6 @@
         .login-box input { width: 100%; padding: 15px; margin-bottom: 25px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; }
         .login-box button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
 
-        /* --- DASHBOARD LAYOUT & MOBILE MENU --- */
         #admin-screen { display: none; min-height: 100vh; flex-direction: row; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
         .sidebar { width: 260px; background: #343a40; color: white; padding: 20px; display: flex; flex-direction: column; transition: 0.3s ease; z-index: 1000; }
@@ -81,6 +79,9 @@
         .form-group { flex: 1; min-width: 150px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+
+        /* 👉 EXPENSE DAY HEADERS */
+        .day-header td { background-color: #e9ecef; font-weight: bold; color: #333; font-size: 16px; border-bottom: 2px solid #dee2e6; }
 
         @media (max-width: 768px) {
             .mobile-header { display: flex; }
@@ -186,7 +187,9 @@
                 </div>
 
                 <div id="section-expenses" class="section">
-                    <div class="section-header"><h2>Business Expenses</h2></div>
+                    <div class="section-header">
+                        <h2>Business Expenses (Last 7 Days)</h2>
+                    </div>
                     <div class="table-container" style="background: #fff3cd; border: 1px solid #ffeeba;">
                         <h2 style="margin-top:0; color: #856404;"><i class="fa-solid fa-money-bill-wave"></i> Record New Expenditure</h2>
                         <div class="form-row">
@@ -202,9 +205,8 @@
                         </div>
                     </div>
                     <div class="table-container">
-                        <h2 style="margin-top:0;">Recorded Expenses</h2>
                         <table>
-                            <thead><tr><th>Date & Time</th><th>Description</th><th>Amount (KES)</th><th>Logged By</th></tr></thead>
+                            <thead><tr><th>Time</th><th>Description</th><th>Amount (KES)</th><th>Logged By</th></tr></thead>
                             <tbody id="expenses-tbody"></tbody>
                         </table>
                     </div>
@@ -216,7 +218,6 @@
                         <h2 style="margin-top:0;"><i class="fa-solid fa-plus-circle"></i> Add New Product</h2>
                         <div class="form-row">
                             <div class="form-group"><label>Name</label><input type="text" id="new-prod-name" placeholder="e.g. Tusker"></div>
-                            
                             <div class="form-group">
                                 <label>Category</label>
                                 <select id="new-prod-type">
@@ -259,7 +260,7 @@
                     <div class="section-header"><h2>Restock Audit Logs</h2></div>
                     <div class="table-container">
                         <table>
-                            <thead><tr><th>Date & Time</th><th>Item Restocked</th><th>Quantity Added</th><th>Added By</th></tr></thead>
+                            <thead><tr><th>Date & Time</th><th>Item Restocked</th><th>Quantity Added</th><th>Added By</th><th>Action</th></tr></thead>
                             <tbody id="alerts-tbody"></tbody>
                         </table>
                     </div>
@@ -355,6 +356,7 @@
             fetchAlerts(); 
         }
 
+        // --- EXPENDITURES DATA (Grouped to 7 Days) ---
         async function fetchExpenses() {
             try {
                 const response = await fetch(`${API_URL}/api/expenditures`);
@@ -364,22 +366,57 @@
                     tbody.innerHTML = '';
                     masterExpensesData = {}; 
 
+                    // Group all expenses by date string
+                    const grouped = {};
                     data.expenses.forEach(exp => {
                         const dateObj = new Date(exp.date);
                         const dayString = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
                         
+                        // For the P&L math later
                         if(!masterExpensesData[dayString]) masterExpensesData[dayString] = [];
                         masterExpensesData[dayString].push(exp);
 
-                        const timeStr = dateObj.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td><i class="fa-regular fa-clock" style="color:#adb5bd;"></i> ${timeStr}</td>
-                            <td><strong>${exp.description}</strong></td>
-                            <td style="color: #dc3545; font-weight: bold;">KES ${exp.amount.toFixed(2)}</td>
-                            <td style="text-transform: uppercase;">${exp.added_by || 'Admin'}</td>
+                        // For the grouped table UI
+                        if(!grouped[dayString]) grouped[dayString] = { total: 0, items: [], rawDate: dateObj };
+                        grouped[dayString].items.push(exp);
+                        grouped[dayString].total += exp.amount;
+                    });
+
+                    // Sort the days by newest first, and slice to ONLY keep the last 7 days
+                    const top7Days = Object.keys(grouped)
+                        .sort((a, b) => grouped[b].rawDate - grouped[a].rawDate)
+                        .slice(0, 7);
+
+                    if (top7Days.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No expenses recorded yet.</td></tr>';
+                        return;
+                    }
+
+                    // Render the 7 days with headers
+                    top7Days.forEach(day => {
+                        const dayData = grouped[day];
+                        
+                        // Render Day Header
+                        const headerTr = document.createElement('tr');
+                        headerTr.className = 'day-header';
+                        headerTr.innerHTML = `
+                            <td colspan="2"><i class="fa-regular fa-calendar-days"></i> ${day}</td>
+                            <td colspan="2" style="text-align:right;">Day Total: KES ${dayData.total.toLocaleString('en-KE', { minimumFractionDigits: 2 })}</td>
                         `;
-                        tbody.appendChild(tr);
+                        tbody.appendChild(headerTr);
+
+                        // Render items for that day
+                        dayData.items.forEach(exp => {
+                            const timeStr = new Date(exp.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><i class="fa-regular fa-clock" style="color:#adb5bd;"></i> ${timeStr}</td>
+                                <td><strong>${exp.description}</strong></td>
+                                <td style="color: #dc3545; font-weight: bold;">KES ${exp.amount.toFixed(2)}</td>
+                                <td style="text-transform: uppercase;">${exp.added_by || 'Admin'}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
                     });
                 }
             } catch (error) { console.error(error); }
@@ -528,7 +565,7 @@
                             <td><input type="number" id="buy-${product._id}" style="width:80px; padding:6px; border:1px solid #ccc;" value="${buyPrice}"></td>
                             <td><input type="number" id="sell-${product._id}" style="width:80px; padding:6px; border:1px solid #ccc;" value="${product.price}"></td>
                             <td><input type="number" id="add-${product._id}" style="width:80px; padding:6px; border:1px solid #ccc;" placeholder="0"></td>
-                            <td>
+                            <td style="white-space:nowrap;">
                                 <button class="btn btn-save" onclick="updateProduct('${product._id}')"><i class="fa-solid fa-floppy-disk"></i></button>
                                 <button class="btn btn-delete" onclick="deleteProduct('${product._id}', '${safeName}')"><i class="fa-solid fa-trash"></i></button>
                             </td>
@@ -571,7 +608,10 @@
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ price: sellPrice, buying_price: buyPrice, addedStock: addedStock, cashierName: 'Admin' })
                 });
-                if((await res.json()).success) loadAllData(); 
+                if((await res.json()).success) {
+                    // Flash a brief alert or just refresh data so they know it saved
+                    loadAllData(); 
+                }
             } catch(e) { console.error(e); }
         }
 
@@ -583,6 +623,7 @@
             } catch(e) { console.error(e); }
         }
 
+        // --- 👉 UPDATED: STOCK ALERTS (WITH DELETE) ---
         async function fetchAlerts() {
             try {
                 const response = await fetch(`${API_URL}/api/stock-logs`);
@@ -591,14 +632,29 @@
                     const tbody = document.getElementById('alerts-tbody');
                     tbody.innerHTML = '';
                     document.getElementById('alert-count').innerText = data.logs.length;
+                    
                     data.logs.reverse().forEach(log => {
                         const timeStr = new Date(log.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                         const tr = document.createElement('tr');
-                        tr.innerHTML = `<td><i class="fa-regular fa-clock"></i> ${timeStr}</td><td><strong>${log.item_name}</strong></td><td style="color: #28a745; font-weight: bold;">+${log.qty_added}</td><td style="text-transform: uppercase;">${log.cashier_name}</td>`;
+                        tr.innerHTML = `
+                            <td><i class="fa-regular fa-clock"></i> ${timeStr}</td>
+                            <td><strong>${log.item_name}</strong></td>
+                            <td style="color: #28a745; font-weight: bold;">+${log.qty_added}</td>
+                            <td style="text-transform: uppercase;">${log.cashier_name}</td>
+                            <td><button class="btn btn-delete" onclick="deleteStockAlert('${log._id}')"><i class="fa-solid fa-trash"></i></button></td>
+                        `;
                         tbody.appendChild(tr);
                     });
                 }
             } catch (error) { console.error(error); }
+        }
+
+        async function deleteStockAlert(id) {
+            if(!confirm("Clear this alert?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/stock-logs/${id}`, { method: 'DELETE' });
+                if((await res.json()).success) fetchAlerts();
+            } catch(e) { console.error(e); }
         }
 
         async function fetchStaffAndAttendance() {
@@ -627,7 +683,6 @@
             } catch (error) { console.error(error); }
         }
 
-        // 👉 RESTORED: Fully functioning Staff Action scripts
         async function addStaff() {
             const name = document.getElementById('new-staff-name').value;
             const role = document.getElementById('new-staff-role').value;

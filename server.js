@@ -284,6 +284,15 @@ apiApp.get('/api/stock-logs', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+// 👉 NEW ROUTE: Delete individual stock alerts
+apiApp.delete('/api/stock-logs/:id', async (req, res) => {
+    try {
+        await StockLog.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'Stock alert deleted!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // WIPE ROUTE: Products
 apiApp.get('/api/products/wipe-test-data', async (req, res) => {

@@ -77,6 +77,11 @@
         .card .value { font-size: 28px; font-weight: bold; color: #333; }
         .card .subtitle { font-size: 12px; color: #888; margin-top: 5px; }
 
+        /* 👉 NEW SEARCH BAR STYLES */
+        .search-container { position: relative; max-width: 350px; margin-top: 15px; margin-bottom: 5px;}
+        .search-container i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; }
+        .search-container input { width: 100%; padding: 12px 10px 12px 40px; border: 1px solid #ccc; border-radius: 20px; font-size: 14px; outline: none; }
+
         .table-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; min-width: 650px; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
@@ -244,6 +249,11 @@
                     <div class="section-header">
                         <h2>Price Management</h2>
                         <p style="color: #888; font-size: 14px; margin-top: 5px;">Edit the buying or selling price of any item entered by the cashiers and click Save.</p>
+                        
+                        <div class="search-container">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="inventory-search-input" placeholder="Search product to edit..." oninput="handleInventorySearch()">
+                        </div>
                     </div>
                     
                     <div class="table-container">
@@ -305,6 +315,9 @@
         const API_URL = "https://api.mafralodge.online";
 
         let allProductsMap = {}; 
+        let allProductsArray = []; // 👉 NEW: Holds array for searching
+        let inventorySearchQuery = ''; // 👉 NEW: Holds search text
+        
         let masterOrdersData = {}; 
         let masterExpensesData = {}; 
         let availableDays = []; 
@@ -555,40 +568,61 @@
             document.getElementById('metric-profit').innerText = dailyNetProfit.toLocaleString('en-KE', { minimumFractionDigits: 2 });
         }
 
-        // --- INVENTORY / PRICING ---
+        // --- 👉 NEW: INVENTORY SEARCH LOGIC ---
+        function handleInventorySearch() {
+            inventorySearchQuery = document.getElementById('inventory-search-input').value.toLowerCase();
+            renderInventoryTable(); // Refresh the table using local browser memory!
+        }
+
         async function fetchInventory() {
             try {
                 const response = await fetch(`${API_URL}/api/products`);
                 const data = await response.json();
                 if (data.success) {
                     allProductsMap = {}; 
-                    const tbody = document.getElementById('inventory-tbody');
-                    tbody.innerHTML = '';
+                    allProductsArray = data.products; // Save the array for the search filter
                     
                     data.products.forEach(product => {
-                        allProductsMap[product._id] = product; 
-
-                        const stockLvl = product.stock || 0;
-                        const stockColor = stockLvl < 10 ? 'color: #dc3545;' : 'color: #28a745;';
-                        const safeName = product.name.replace(/'/g, "\\'");
-                        const buyPrice = product.buying_price || 0;
-
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td><strong>${product.name}</strong></td>
-                            <td style="text-transform: capitalize;">${product.type}</td>
-                            <td style="font-weight: bold; font-size: 18px; ${stockColor}">${stockLvl}</td>
-                            <td><input type="number" id="buy-${product._id}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;" value="${buyPrice}"></td>
-                            <td><input type="number" id="sell-${product._id}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;" value="${product.price}"></td>
-                            <td style="white-space:nowrap;">
-                                <button class="btn btn-save" onclick="updateProduct('${product._id}')"><i class="fa-solid fa-floppy-disk"></i> Update</button>
-                                <button class="btn btn-delete" onclick="deleteProduct('${product._id}', '${safeName}')"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
+                        allProductsMap[product._id] = product; // Map needed for profit calculation
                     });
+
+                    renderInventoryTable();
                 }
             } catch (error) { console.error(error); }
+        }
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventory-tbody');
+            tbody.innerHTML = '';
+            
+            // Filter the array based on what you typed in the search bar
+            const filteredProducts = allProductsArray.filter(p => p.name.toLowerCase().includes(inventorySearchQuery));
+            
+            if(filteredProducts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">No matching products found.</td></tr>';
+                return;
+            }
+
+            filteredProducts.forEach(product => {
+                const stockLvl = product.stock || 0;
+                const stockColor = stockLvl < 10 ? 'color: #dc3545;' : 'color: #28a745;';
+                const safeName = product.name.replace(/'/g, "\\'");
+                const buyPrice = product.buying_price || 0;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${product.name}</strong></td>
+                    <td style="text-transform: capitalize;">${product.type}</td>
+                    <td style="font-weight: bold; font-size: 18px; ${stockColor}">${stockLvl}</td>
+                    <td><input type="number" id="buy-${product._id}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;" value="${buyPrice}"></td>
+                    <td><input type="number" id="sell-${product._id}" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;" value="${product.price}"></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn btn-save" onclick="updateProduct('${product._id}')"><i class="fa-solid fa-floppy-disk"></i> Update</button>
+                        <button class="btn btn-delete" onclick="deleteProduct('${product._id}', '${safeName}')"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         async function updateProduct(id) {

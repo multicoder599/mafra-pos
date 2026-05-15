@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mafra Lodge - Cashier Portal</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,22 +15,12 @@
         body { margin: 0; background-color: #f4f6f9; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         
         /* --- CUSTOM MODAL --- */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        .modal-box {
-            background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px;
-            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3); animation: scaleUp 0.3s ease;
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3); animation: scaleUp 0.3s ease; }
         @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-box h3 { margin-top: 0; font-size: 22px; color: #333; margin-bottom: 10px; }
         .modal-box p { color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.5; }
-        .modal-btn {
-            background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 8px;
-            font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; transition: 0.2s;
-        }
+        .modal-btn { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; transition: 0.2s; }
         .modal-btn:hover { filter: brightness(1.1); }
         .modal-btn.success { background: #28a745; }
         .modal-btn.error { background: #dc3545; }
@@ -41,16 +31,9 @@
         .modal-icon.warning { color: #ffc107; }
 
         /* --- LOGIN SCREEN --- */
-        #login-screen { 
-            display: flex; height: 100vh; width: 100vw; background-image: url('background.png'); 
-            background-size: cover; background-position: center; position: absolute;
-            top: 0; left: 0; align-items: center; justify-content: flex-start; padding-left: 8%; z-index: 1000;
-        }
+        #login-screen { display: flex; height: 100vh; width: 100vw; background-image: url('background.png'); background-size: cover; background-position: center; position: absolute; top: 0; left: 0; align-items: center; justify-content: flex-start; padding-left: 8%; z-index: 1000; }
         #login-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1; }
-        .login-box { 
-            position: relative; z-index: 2; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            padding: 45px 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 100%; max-width: 400px; 
-        }
+        .login-box { position: relative; z-index: 2; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 45px 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 100%; max-width: 400px; }
         .login-box h2 { font-size: 32px; color: #333; margin-top: 0; margin-bottom: 10px; }
         .login-box p { color: #6c757d; margin-bottom: 30px; font-size: 15px; }
         .login-box label { font-weight: bold; font-size: 14px; color: #495057; display: block; margin-bottom: 8px; }
@@ -86,7 +69,6 @@
         .search-container i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; }
         .search-container input { width: 100%; padding: 10px 10px 10px 40px; border: 1px solid #ccc; border-radius: 20px; font-size: 15px; outline: none; }
 
-        /* 👉 UPDATED: Scrollable category filters */
         .category-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; width: 100%; }
         .filter-btn { padding: 8px 16px; border: 1px solid #ced4da; background: white; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; color: #495057; white-space: nowrap; }
         .filter-btn.active { background: #007bff; color: white; border-color: #007bff; }
@@ -312,7 +294,15 @@
                     </div>
                 </div>
                 <div class="table-container">
-                    <h2><i class="fa-solid fa-database"></i> Live Database</h2>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <h2 style="margin: 0;"><i class="fa-solid fa-database"></i> Live Database</h2>
+                        <div class="search-container" style="margin-top: 0; max-width: 300px; width: 100%;">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="inventory-search-input" placeholder="Search product to update..." oninput="handleInventorySearch()">
+                        </div>
+                    </div>
+                    
                     <table>
                         <thead>
                             <tr>
@@ -377,8 +367,11 @@
         let cart = JSON.parse(localStorage.getItem('cashier_cart')) || [];
         let allProducts = JSON.parse(localStorage.getItem('mafra_cached_menu')) || []; 
         let offlineQueue = JSON.parse(localStorage.getItem('mafra_offline_queue')) || [];
+        
         let currentCategory = 'all';
         let searchQuery = '';
+        let inventorySearchQuery = ''; // 👉 NEW: For tracking database search
+        
         let loggedInUsername = localStorage.getItem('cashier_username') || 'Cashier';
 
         function showModal(title, message, type = 'warning') {
@@ -434,18 +427,20 @@
         document.addEventListener("DOMContentLoaded", () => {
             if (!isActuallyOnline) document.getElementById('offline-badge').style.display = 'block';
             if (cart.length > 0) updateCartUI();
-            if (allProducts.length > 0) renderPOSGrid(); 
+            if (allProducts.length > 0) {
+                renderPOSGrid(); 
+                renderInventoryTable();
+            }
             
             if(localStorage.getItem('cashier_logged_in') === 'true') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-screen').style.display = 'flex'; 
                 fetchAndRenderProducts();
                 fetchHistory(); 
-                fetchCashierExpenses(); // 👉 Load today's expenses
+                fetchCashierExpenses(); 
             }
         });
 
-        // --- EXPENDITURE LOGIC (NEW) ---
         async function fetchCashierExpenses() {
             if(!isActuallyOnline) return;
             try {
@@ -456,11 +451,10 @@
                     tbody.innerHTML = '';
                     let dailyTotal = 0;
                     
-                    const todayStr = new Date().toLocaleDateString('en-US'); // Matches format
+                    const todayStr = new Date().toLocaleDateString('en-US');
 
                     data.expenses.forEach(exp => {
                         const expDate = new Date(exp.date);
-                        // Only show today's expenses on the cashier side
                         if (expDate.toLocaleDateString('en-US') === todayStr) {
                             dailyTotal += exp.amount;
                             const timeStr = expDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -500,7 +494,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- SYNC ENGINE ---
         async function syncOfflineOrders() {
             if (offlineQueue.length === 0) return;
             showModal('Syncing Data', `Connection restored! Syncing ${offlineQueue.length} offline order(s) to the Admin database...`, 'warning');
@@ -563,7 +556,6 @@
             location.reload(); 
         }
 
-        // --- FETCH & RENDER POS ---
         async function fetchAndRenderProducts() {
             if(!isActuallyOnline) return; 
             try {
@@ -581,7 +573,6 @@
         function filterProducts(category) {
             currentCategory = category;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            // Fix spaces in IDs if passing category names with spaces
             document.getElementById(`filter-${category}`).classList.add('active');
             renderPOSGrid();
         }
@@ -589,6 +580,12 @@
         function handleSearch() {
             searchQuery = document.getElementById('search-input').value.toLowerCase();
             renderPOSGrid();
+        }
+
+        // 👉 NEW: Handles the search for the Cashier's inventory
+        function handleInventorySearch() {
+            inventorySearchQuery = document.getElementById('inventory-search-input').value.toLowerCase();
+            renderInventoryTable();
         }
 
         function renderPOSGrid() {
@@ -612,7 +609,6 @@
             });
         }
 
-        // --- CART ---
         function addToCart(product) {
             if (!product || !product._id) return showModal("Error", "Corrupt product data.", "error");
             const existing = cart.find(item => item._id === product._id);
@@ -657,7 +653,6 @@
             localStorage.setItem('cashier_cart', JSON.stringify(cart));
         }
 
-        // --- CHECKOUT ---
         async function processCheckout() {
             if(cart.length === 0) return showModal("Empty Cart", "Cannot checkout an empty cart.", "warning");
             
@@ -672,7 +667,6 @@
             const dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth()+1).padStart(2, '0')}-${now.getFullYear()} ${now.toLocaleTimeString('en-GB')}`;
             document.getElementById('receipt-date').innerText = dateStr;
             
-            // 👉 UPDATED: Subtotal row replaced with VAT logic
             document.getElementById('receipt-total').innerText = total.toFixed(2);
             document.getElementById('receipt-payment').innerText = total.toFixed(2);
             
@@ -715,7 +709,6 @@
             localStorage.setItem('mafra_offline_queue', JSON.stringify(offlineQueue));
         }
 
-        // --- ORDER HISTORY ---
         async function fetchHistory() {
             if(!isActuallyOnline) return; 
             try {
@@ -757,11 +750,19 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- INVENTORY CRUD ---
+        // 👉 UPDATED: Now filters the database table instantly based on search
         function renderInventoryTable() {
             const tbody = document.getElementById('inventory-tbody');
             tbody.innerHTML = '';
-            allProducts.forEach(product => {
+            
+            const filteredProducts = allProducts.filter(p => p.name.toLowerCase().includes(inventorySearchQuery));
+            
+            if (filteredProducts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">No matching products found.</td></tr>';
+                return;
+            }
+            
+            filteredProducts.forEach(product => {
                 if (!product || !product._id) return;
                 const safeName = product.name.replace(/'/g, "\\'");
                 const tr = document.createElement('tr');
@@ -771,7 +772,7 @@
                     <td style="font-weight: bold; color: ${product.stock < 5 ? '#dc3545' : '#28a745'};">${product.stock || 0}</td>
                     <td><input type="number" id="price-${product._id}" class="edit-input" value="${product.price}"></td>
                     <td><input type="number" id="addstock-${product._id}" class="edit-input" placeholder="0"></td>
-                    <td>
+                    <td style="white-space:nowrap;">
                         <button class="btn-action btn-save" onclick="updateProduct('${product._id}')"><i class="fa-solid fa-floppy-disk"></i></button>
                         <button class="btn-action btn-del" onclick="deleteProduct('${product._id}', '${safeName}')"><i class="fa-solid fa-trash"></i></button>
                     </td>
